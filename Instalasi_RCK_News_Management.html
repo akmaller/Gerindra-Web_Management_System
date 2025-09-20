@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerindra-Web_Management System - Panduan Instalasi di Server</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; background: #f5f5f5; color: #333; }
+    h1, h2, h3 { color: #990000; }
+    pre, code { background: #222; color: #eee; padding: 10px; display: block; border-radius: 6px; overflow-x: auto; }
+    .section { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+  <h1>📘 Panduan Instalasi Gerindra-Web_Management System di Server</h1>
+
+  <div class="section">
+    <h2>1. Persiapan Awal</h2>
+    <ul>
+      <li>Akses SSH dengan <code>sudo</code> di server.</li>
+      <li>Domain/subdomain sudah mengarah ke server.</li>
+      <li>Database MySQL/MariaDB siap (nama DB, user, password).</li>
+      <li>PHP 8.3 dan Composer terpasang.</li>
+      <li>Web server (Nginx/Apache) tersedia.</li>
+      <li>Ekstensi PHP wajib: <code>imagick</code> atau <code>gd</code>, <code>mbstring</code>, <code>curl</code>, <code>pdo_mysql</code>, <code>openssl</code>, <code>tokenizer</code>, <code>xml</code>, <code>ctype</code>, <code>json</code>, <code>fileinfo</code>, <code>zip</code>, <code>bcmath</code>.</li>
+    </ul>
+    <p><b>Opsional:</b> pasang CLI optimizer untuk kompres gambar agresif:</p>
+    <pre><code>sudo apt install jpegoptim optipng pngquant gifsicle webp</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>2. Instalasi Project</h2>
+    <h3>Clone repo</h3>
+    <pre><code>cd /www/wwwroot/
+git clone https://github.com/akmaller/Gerindra-Web_Management_System.git
+cd Gerindra-Web_Management_System</code></pre>
+
+    <h3>Install dependency</h3>
+    <pre><code>composer install --no-dev --optimize-autoloader</code></pre>
+
+    <h3>Konfigurasi .env</h3>
+    <pre><code>cp .env.example .env</code></pre>
+    <p>Edit isi <code>.env</code>:</p>
+    <pre><code>APP_NAME="Gerindra-Web_Management"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://news.roemahcita.id
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=nama_db
+DB_USERNAME=user_db
+DB_PASSWORD=pass_db
+
+FILESYSTEM_DISK=public</code></pre>
+
+    <h3>Generate APP_KEY</h3>
+    <pre><code>php artisan key:generate</code></pre>
+
+    <h3>Link storage</h3>
+    <pre><code>php artisan storage:link</code></pre>
+
+    <h3>Folder & permission</h3>
+    <pre><code>mkdir -p storage/framework/{cache,sessions,views}
+chown -R www-data:www-data storage bootstrap/cache
+find storage bootstrap/cache -type d -exec chmod 775 {} \;
+find storage bootstrap/cache -type f -exec chmod 664 {} \;</code></pre>
+
+    <h3>Migration database</h3>
+    <pre><code>php artisan migrate --force</code></pre>
+
+    <h3>Buat user admin Filament (opsional)</h3>
+    <pre><code>php artisan make:filament-user</code></pre>
+
+    <h3>Cache konfigurasi</h3>
+    <pre><code>php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>3. Konfigurasi Web Server</h2>
+
+    <h3>Nginx (contoh)</h3>
+    <pre><code>server {
+    server_name news.roemahcita.id;
+    root /www/wwwroot/Gerindra-Web_Management_System/public;
+
+    index index.php index.html;
+    client_max_body_size 16m;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+    }
+
+    location ~* \.(jpg|jpeg|png|gif|webp|css|js|ico|svg)$ {
+        expires 30d;
+        access_log off;
+    }
+}</code></pre>
+
+    <p>Aktifkan config & reload:</p>
+    <pre><code>sudo ln -s /etc/nginx/sites-available/gerindra-web-management.conf /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+sudo systemctl restart php8.3-fpm</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>4. Deployment Update (Setiap Kali Pull)</h2>
+    <pre><code>git pull origin main
+composer install --no-dev --optimize-autoloader
+
+php artisan migrate --force
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+chown -R www-data:www-data storage bootstrap/cache
+find storage bootstrap/cache -type d -exec chmod 775 {} \;
+find storage bootstrap/cache -type f -exec chmod 664 {} \;
+
+sudo systemctl reload nginx
+sudo systemctl restart php8.3-fpm</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>5. Script Deploy Otomatis (Opsional)</h2>
+    <pre><code>#!/bin/bash
+BRANCH=${1:-main}
+WEBUSER=www-data
+
+echo "-> Pull $BRANCH"
+git fetch origin
+git checkout $BRANCH
+git pull origin $BRANCH
+
+echo "-> Composer install"
+composer install --no-dev --optimize-autoloader
+
+echo "-> Artisan tasks"
+php artisan migrate --force || true
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan storage:link || true
+mkdir -p storage/framework/{cache,sessions,views}
+
+echo "-> Permissions"
+chown -R $WEBUSER:$WEBUSER storage bootstrap/cache
+find storage bootstrap/cache -type d -exec chmod 775 {} \;
+find storage bootstrap/cache -type f -exec chmod 664 {} \;
+
+echo "-> Reload services"
+systemctl restart php8.3-fpm || true
+systemctl reload nginx || true
+
+echo "✅ Deploy done."</code></pre>
+  </div>
+
+</body>
+</html>
