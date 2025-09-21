@@ -90,11 +90,10 @@ Menjalankan `php artisan db:seed` akan memuat data berikut:
 | --- | --- |
 | `SiteSettingsSeeder` | Nama situs, deskripsi, logo awal. |
 | `CompanyProfileSeeder` | Company profile default (nama, alamat, email). |
-| `PageSeeder` | 10 halaman profil (Profil Partai, Deklarasi, Sejarah, Visi-Misi, dst) + halaman umum. |
-| `NewsPostSeeder` | 13 berita resmi beserta kategori, tag, dan tree menu `Gerindra → Profil`. |
+| `NewsPostSeeder` | 13 berita resmi beserta kategori, tag, dan struktur menu `Gerindra → Profil`. |
 | `CategorySeeder`, `RolesSeeder` | Referensi kategori dasar & role pengguna. |
 
-Anda bisa menjalankan seeder tertentu secara mandiri, misalnya:
+Halaman profil organisasi dibuat manual melalui Filament → Pages. Anda bisa menjalankan seeder lain secara mandiri, misalnya:
 ```bash
 php artisan db:seed --class=NewsPostSeeder
 ```

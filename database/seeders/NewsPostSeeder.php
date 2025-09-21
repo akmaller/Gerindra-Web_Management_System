@@ -3,8 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
-use App\Models\Menu;
-use App\Models\Page;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Models\User;
@@ -268,77 +266,6 @@ HTML,
 
             $post->tags()->sync($tagIds);
             $post->categories()->sync($categoryIds->all());
-        }
-
-        $this->seedMenus();
-    }
-
-    protected function seedMenus(): void
-    {
-        $gerindraMenu = Menu::updateOrCreate(
-            [
-                'parent_id' => null,
-                'location' => 'header',
-                'label' => 'Gerindra',
-            ],
-            [
-                'item_type' => 'page',
-                'open_in_new_tab' => false,
-                'is_active' => true,
-                'sort_order' => 5,
-            ]
-        );
-
-        $profileMenu = Menu::updateOrCreate(
-            [
-                'parent_id' => $gerindraMenu->id,
-                'location' => 'header',
-                'label' => 'Profil',
-            ],
-            [
-                'item_type' => 'page',
-                'open_in_new_tab' => false,
-                'is_active' => true,
-                'sort_order' => 0,
-            ]
-        );
-
-        $slugs = [
-            'profil-partai-gerindra',
-            'deklarasi-partai-gerindra',
-            'sejarah-partai-gerindra',
-            'visi-misi',
-            'tugas-fungsi',
-            'makna-lambang',
-            'anggaran-dasar-anggaran-rumah-tangga',
-            'manifesto-perjuangan-partai-gerindra',
-            'susunan-pengurus-dpp-gerindra',
-            'struktur-organisasi-partai-gerindra',
-        ];
-
-        $pages = Page::whereIn('slug', $slugs)->get()->keyBy('slug');
-
-        foreach ($slugs as $index => $slug) {
-            $page = $pages->get($slug);
-
-            if (! $page) {
-                continue;
-            }
-
-            Menu::updateOrCreate(
-                [
-                    'parent_id' => $profileMenu->id,
-                    'page_id' => $page->id,
-                    'location' => 'header',
-                ],
-                [
-                    'label' => $page->title,
-                    'item_type' => 'page',
-                    'open_in_new_tab' => false,
-                    'is_active' => true,
-                    'sort_order' => $index,
-                ]
-            );
         }
     }
 }

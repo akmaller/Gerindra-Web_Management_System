@@ -69,11 +69,10 @@ Form "Homepage Settings" menyediakan:
 Perintah `php artisan db:seed` mengisi data berikut:
 - **SiteSettingsSeeder** – identitas situs.
 - **CompanyProfileSeeder** – profil organisasi.
-- **PageSeeder** – 10 halaman profil + halaman umum.
 - **NewsPostSeeder** – 13 berita resmi, kategori, tag, dan menu `Gerindra → Profil`.
 - **CategorySeeder & RolesSeeder** – kategori dasar & role pengguna.
 
-Anda dapat menjalankan seeder spesifik, misalnya:
+Halaman profil dapat dibuat manual melalui Filament → Pages. Anda dapat menjalankan seeder spesifik lainnya, misalnya:
 ```bash
 php artisan db:seed --class=NewsPostSeeder
 ```

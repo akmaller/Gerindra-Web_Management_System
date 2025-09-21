@@ -20,7 +20,7 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\BulkAction;
 use Filament\Actions\DeleteBulkAction;
-use Illuminate\Support\Collection;
+use Filament\Support\Collection;
 use Carbon\Carbon;
 
 class PostResource extends Resource

@@ -12,9 +12,7 @@
             $normalized = \Illuminate\Support\Str::after($normalized, 'storage/');
         }
 
-        $disk = \Illuminate\Support\Facades\Storage::disk('public');
-
-        if (! $disk->exists($normalized)) {
+        if (! \Illuminate\Support\Facades\Storage::disk('public')->exists($normalized)) {
             return asset($fallback);
         }
 
@@ -23,12 +21,12 @@
         foreach (['webp', 'jpg', 'png'] as $ext) {
             $candidate = $base . '-' . $suffix . '.' . $ext;
 
-            if ($disk->exists($candidate)) {
-                return $disk->url($candidate);
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($candidate)) {
+                return \Illuminate\Support\Facades\Storage::url($candidate);
             }
         }
 
-        return $disk->url($normalized);
+        return \Illuminate\Support\Facades\Storage::url($normalized);
     };
 @endphp
 
