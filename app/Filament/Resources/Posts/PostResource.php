@@ -101,11 +101,29 @@ class PostResource extends Resource
 
                 Section::make('Detail')
                     ->schema([
-                        Forms\Components\Select::make('category_id')
+                        Forms\Components\Select::make('categories')
                             ->label('Kategori')
-                            ->relationship('category', 'name')
+                            ->relationship('categories', 'name')
+                            ->multiple()
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->required()
+                            ->live()
+                            ->afterStateHydrated(function (callable $set, $state) {
+                                if ($state instanceof \Illuminate\Support\Collection) {
+                                    $state = $state->all();
+                                }
+                                $set('category_id', is_array($state) ? ($state[0] ?? null) : null);
+                            })
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                if ($state instanceof \Illuminate\Support\Collection) {
+                                    $state = $state->all();
+                                }
+                                $set('category_id', is_array($state) ? ($state[0] ?? null) : null);
+                            })
+                            ->helperText('Pilih satu atau lebih kategori. Kategori pertama akan menjadi kategori utama.'),
+
+                        Forms\Components\Hidden::make('category_id'),
 
                         Forms\Components\FileUpload::make('thumbnail')
                             ->label('Thumbnail')

@@ -34,6 +34,32 @@
                     {!! $page->content !!}
                 </div>
 
+                @if($page->attachment_path)
+                    <div class="mt-6 p-4 rounded-xl border border-neutral-200 bg-white shadow-sm flex items-center justify-between flex-wrap gap-3">
+                        <div>
+                            <h2 class="text-lg font-semibold text-neutral-900">Lampiran</h2>
+                            <p class="text-sm text-neutral-600">Unduh dokumen pendukung dalam format PDF.</p>
+                        </div>
+                        <a href="{{ Storage::url($page->attachment_path) }}"
+                           class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[color:var(--brand-primary)] text-[color:var(--brand-primary-contrast)] font-semibold hover:bg-[color:var(--brand-secondary)] transition"
+                           target="_blank" rel="noopener">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5">
+                                <path fill-rule="evenodd" d="M3 4.75A1.75 1.75 0 0 1 4.75 3h10.5A1.75 1.75 0 0 1 17 4.75v10.5A1.75 1.75 0 0 1 15.25 17H4.75A1.75 1.75 0 0 1 3 15.25V4.75Zm7.53 1.72a.75.75 0 0 0-1.06 0l-3.25 3.25a.75.75 0 0 0 1.06 1.06l1.97-1.97v4.69a.75.75 0 0 0 1.5 0V8.81l1.97 1.97a.75.75 0 0 0 1.06-1.06l-3.25-3.25Z" clip-rule="evenodd" />
+                            </svg>
+                            <span>Download PDF</span>
+                        </a>
+                    </div>
+
+                    <div class="mt-4 rounded-xl overflow-hidden border border-neutral-200 shadow-sm">
+                        <iframe
+                            src="{{ Storage::url($page->attachment_path) }}#view=FitH"
+                            class="w-full"
+                            style="height: min(85vh, 900px);"
+                            title="Lampiran {{ $page->title }}"
+                        ></iframe>
+                    </div>
+                @endif
+
                 {{-- Iklan bawah konten --}}
                 <div class="mt-10">
                     @includeIf('partials.ad-slot', ['location' => 'below_post'])

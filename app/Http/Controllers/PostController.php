@@ -16,7 +16,7 @@ class PostController extends Controller
     {
         $perPage = 12;
 
-        $posts = Post::with('category')
+        $posts = Post::with('categories')
             ->published()
             ->latest('published_at')
             ->paginate($perPage)
@@ -53,7 +53,7 @@ class PostController extends Controller
 
         // Post
         $post = Post::published()
-            ->with(['category', 'tags']) // hapus/ubah kalau relasi berbeda
+            ->with(['categories', 'tags'])
             ->where('slug', $slug)
             ->firstOrFail();
 
@@ -115,8 +115,8 @@ class PostController extends Controller
 
         $latestPosts = Post::published()->latest('published_at')->limit(4)->get();
         $related = Post::published()
-            ->where('category_id', $post->category_id)
             ->whereKeyNot($post->getKey())
+            ->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $post->categories->pluck('id')))
             ->latest('published_at')
             ->limit(6)
             ->get();

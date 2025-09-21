@@ -202,9 +202,9 @@
                         </div>
                     </a>
                     <div class="p-5 space-y-3">
-                        @if($post->category)
-                            <a href="{{ route('category.show', $post->category->slug) }}" class="text-xs font-semibold uppercase tracking-wide text-[color:var(--brand-primary)]">
-                                {{ $post->category->name }}
+                        @if($post->primary_category)
+                            <a href="{{ route('category.show', $post->primary_category->slug) }}" class="text-xs font-semibold uppercase tracking-wide text-[color:var(--brand-primary)]">
+                                {{ $post->primary_category->name }}
                             </a>
                         @endif
                         <h4 class="text-xl font-semibold leading-tight text-neutral-900">
@@ -266,7 +266,6 @@
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
             <div class="mb-6">
                 <h3 class="text-2xl font-bold text-neutral-900">Susunan Pengurus</h3>
-                <p class="mt-2 text-sm text-neutral-500">Struktur inti organisasi Gerindra-Web_Management.</p>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

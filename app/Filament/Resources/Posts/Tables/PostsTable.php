@@ -15,12 +15,13 @@ class PostsTable
     {
         return $table
             ->columns([
-                TextColumn::make('user_id')
-                    ->numeric()
+                TextColumn::make('author.name')
+                    ->label('Penulis')
                     ->sortable(),
-                TextColumn::make('category_id')
-                    ->numeric()
-                    ->sortable(),
+                TextColumn::make('categories.name')
+                    ->label('Kategori')
+                    ->formatStateUsing(fn ($state) => collect($state)->join(', '))
+                    ->wrap(),
                 TextColumn::make('title')
                     ->searchable(),
                 TextColumn::make('slug')

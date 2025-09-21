@@ -62,7 +62,7 @@ class PopularPosts
                 ->get();
 
             // Ambil post lengkap + urutkan sesuai agregat
-            $posts = Post::with(['category'])
+            $posts = Post::with(['categories'])
                 ->whereIn('id', $query->pluck('post_id'))
                 ->get()
                 ->keyBy('id');

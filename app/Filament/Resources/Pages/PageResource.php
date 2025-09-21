@@ -67,6 +67,14 @@ class PageResource extends Resource
                     ->directory('pages')
                     ->visibility('public'),
 
+                Forms\Components\FileUpload::make('attachment_path')
+                    ->label('Lampiran PDF')
+                    ->acceptedFileTypes(['application/pdf'])
+                    ->disk('public')
+                    ->directory('pages/attachments')
+                    ->visibility('public')
+                    ->helperText('Unggah dokumen pendukung (PDF).'),
+
                 Forms\Components\Toggle::make('is_active')
                     ->label('Aktif?')
                     ->default(true),
@@ -74,18 +82,9 @@ class PageResource extends Resource
                 Forms\Components\RichEditor::make('content')
                     ->label('Isi Halaman')
                     ->columnSpanFull()
-                    ->toolbarButtons([
-                        'bold',
-                        'italic',
-                        'underline',
-                        'strike',
-                        'bulletList',
-                        'orderedList',
-                        'blockquote',
-                        'link',
-                        'h2',
-                        'h3',
-                    ]),
+                    ->fileAttachmentsDisk('public')
+                    ->fileAttachmentsDirectory('editor/pages')
+                    ->fileAttachmentsVisibility('public'),
             ]);
     }
 

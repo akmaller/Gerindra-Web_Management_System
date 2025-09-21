@@ -10,9 +10,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
 
         {{-- Logo --}}
-        <a href="{{ route('home') }}" class="flex items-center gap-3">
+        <a href="{{ route('home') }}" class="flex items-center">
                 @if($settings?->logo_path)
-                    <img src="{{ asset('storage/'.$settings->logo_path) }}" alt="{{ $settings->site_name }}" class="h-8 w-auto" width="160" height="40" fetchpriority="low">
+                    <img src="{{ asset('storage/'.$settings->logo_path) }}" alt="{{ $settings->site_name }}" class="h-12 w-auto" width="160" height="40" fetchpriority="low">
                 @else
                     <span class="font-bold text-lg">{{ $settings->site_name ?? config('app.name') }}</span>
                 @endif

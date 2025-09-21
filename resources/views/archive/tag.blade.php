@@ -15,10 +15,12 @@
                 </a>
                 <div class="p-4">
                     @if($post->category)
-                        <a href="{{ route('category.show', $post->category->slug) }}"
-                           class="text-xs uppercase tracking-wider text-[color:var(--brand-primary)] font-semibold">
-                           {{ $post->category->name }}
-                        </a>
+                        @if($post->primary_category)
+                            <a href="{{ route('category.show', $post->primary_category->slug) }}"
+                               class="text-xs uppercase tracking-wider text-[color:var(--brand-primary)] font-semibold">
+                                {{ $post->primary_category->name }}
+                            </a>
+                        @endif
                     @endif
                     <h2 class="mt-1 text-lg font-semibold leading-tight line-clamp-2">
                         <a href="{{ $post->permalink }}">{{ $post->title }}</a>

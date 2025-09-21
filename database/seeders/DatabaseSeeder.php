@@ -33,6 +33,9 @@ class DatabaseSeeder extends Seeder
         // panggil seeder lain
         $this->call([
             SiteSettingsSeeder::class,
+            PageSeeder::class,
+            NewsPostSeeder::class,
+            CompanyProfileSeeder::class,
             CategorySeeder::class,
             RolesSeeder::class,
         ]);

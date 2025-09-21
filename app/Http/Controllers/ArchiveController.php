@@ -22,8 +22,8 @@ class ArchiveController extends Controller
 
         $category = Category::where('slug', $slug)->where('is_active', true)->firstOrFail();
 
-        $posts = Post::with(['category', 'tags'])
-            ->where('category_id', $category->id)
+        $posts = Post::with(['categories', 'tags'])
+            ->whereHas('categories', fn ($q) => $q->where('categories.id', $category->id))
             ->published()
             ->orderByDesc('published_at')
             ->paginate(12)
@@ -49,7 +49,7 @@ class ArchiveController extends Controller
 
         $tag = Tag::where('slug', $slug)->firstOrFail();
 
-        $posts = Post::with(['category', 'tags'])
+        $posts = Post::with(['categories', 'tags'])
             ->whereHas('tags', fn($q) => $q->where('tags.id', $tag->id))
             ->published()
             ->orderByDesc('published_at')

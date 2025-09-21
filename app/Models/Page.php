@@ -14,6 +14,7 @@ class Page extends Model
         'slug',
         'content',
         'thumbnail',
+        'attachment_path',
         'is_active',
     ];
 

@@ -35,7 +35,7 @@ class HomeController extends Controller
                     if (Str::startsWith($path, ['http://', 'https://'])) {
                         $imageUrl = $path;
                     } elseif (Storage::disk('public')->exists($path)) {
-                        $imageUrl = Storage::disk('public')->url($path);
+                        $imageUrl = Storage::url($path);
                     }
                 }
 
@@ -52,7 +52,7 @@ class HomeController extends Controller
             ->values();
 
         if ($heroSlides->isEmpty()) {
-            $heroSlides = Post::with('category')
+            $heroSlides = Post::with('categories')
                 ->published()
                 ->orderByDesc('published_at')
                 ->limit(3)
@@ -63,7 +63,7 @@ class HomeController extends Controller
                     $path = $this->resolveStoragePath($post->thumbnail);
 
                     if ($path && Storage::disk('public')->exists($path)) {
-                        $imageUrl = Storage::disk('public')->url($path);
+                        $imageUrl = Storage::url($path);
                     }
 
                     $imageUrl ??= asset('images/example-middle.webp');
@@ -71,7 +71,7 @@ class HomeController extends Controller
                     return [
                         'image_url' => $imageUrl,
                         'title' => $post->title,
-                        'subtitle' => $post->category?->name,
+                        'subtitle' => $post->primary_category?->name,
                         'link_label' => 'Baca selengkapnya',
                         'link_url' => $post->permalink,
                     ];
@@ -99,7 +99,7 @@ class HomeController extends Controller
                         $path = $this->resolveStoragePath($photoPath);
 
                         if ($path && Storage::disk('public')->exists($path)) {
-                            $photoUrl = Storage::disk('public')->url($path);
+                            $photoUrl = Storage::url($path);
                         }
                     }
                 }
@@ -112,7 +112,7 @@ class HomeController extends Controller
             })
             ->values();
 
-        $latestPosts = Post::with('category')
+        $latestPosts = Post::with('categories')
             ->published()
             ->orderByDesc('published_at')
             ->limit(3)
@@ -140,9 +140,9 @@ class HomeController extends Controller
                     return null;
                 }
 
-                $posts = Post::with('category')
+                $posts = Post::with('categories')
                     ->published()
-                    ->where('category_id', $category->id)
+                    ->whereHas('categories', fn ($q) => $q->where('categories.id', $category->id))
                     ->orderByDesc('published_at')
                     ->limit(3)
                     ->get();
@@ -182,7 +182,7 @@ class HomeController extends Controller
                 $logoPath = $this->resolveStoragePath($settings->logo_path);
 
                 if ($logoPath && Storage::disk('public')->exists($logoPath)) {
-                    $logoUrl = Storage::disk('public')->url($logoPath);
+                    $logoUrl = Storage::url($logoPath);
                 }
             }
 

@@ -16,10 +16,10 @@
 
       {{-- Meta --}}
       <div class="mt-2 flex flex-wrap items-center gap-3 text-sm text-neutral-500">
-        @if($post->category)
-          <a href="{{ route('category.show', $post->category->slug) }}"
+        @if($post->primary_category)
+          <a href="{{ route('category.show', $post->primary_category->slug) }}"
              class="inline-flex items-center rounded-full bg-[color:var(--brand-surface)] px-3 py-1 text-[color:var(--brand-primary)] font-medium hover:bg-white/40">
-            {{ $post->category->name }}
+            {{ $post->primary_category->name }}
           </a>
         @endif
         <span>•</span>

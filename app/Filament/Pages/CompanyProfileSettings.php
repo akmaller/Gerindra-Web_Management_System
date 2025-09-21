@@ -109,7 +109,7 @@ class CompanyProfileSettings extends Page implements HasSchemas
 
     public function save(): void
     {
-        abort_unless(auth()->user()?->hasRole('admin', 'editor'), 403);
+        abort_unless(auth()->user()?->hasAnyRole(['admin', 'editor']), 403);
 
         $this->record->fill($this->form->getState())->save();
 

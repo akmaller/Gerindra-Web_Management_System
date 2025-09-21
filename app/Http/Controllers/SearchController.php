@@ -31,7 +31,7 @@ class SearchController extends Controller
                 $w->where('title', 'like', "%{$q}%")
                     ->orWhere('content', 'like', "%{$q}%");
             })
-            ->with(['category:id,name,slug'])
+            ->with(['categories:id,name,slug'])
             ->select(['id', 'title', 'slug', 'thumbnail', 'category_id', 'published_at', 'content']);
 
         // --- Pages (published/active) ---
@@ -51,7 +51,7 @@ class SearchController extends Controller
                 'excerpt' => Str::limit(strip_tags($p->content), 180),
                 'date' => $p->published_at,
                 'thumb' => $p->thumbnail ? asset('storage/' . $p->thumbnail) : null,
-                'badge' => $p->category?->name ?? 'Berita',
+                'badge' => $p->primary_category?->name ?? 'Berita',
                 'url' => route('posts.show', [
                     'tahun' => $p->published_at?->format('Y'),
                     'bulan' => $p->published_at?->format('m'),
