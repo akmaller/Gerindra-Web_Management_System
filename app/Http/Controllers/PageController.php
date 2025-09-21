@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\InteractsWithSeo;
 use App\Models\Page;
 use App\Models\Post;
-use Artesaos\SEOTools\Facades\SEOTools;
-use App\Services\PopularPosts;
 use App\Models\SiteSetting;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class PageController extends Controller
 {
+    use InteractsWithSeo;
+
     public function show(string $slug)
     {
         $settings = SiteSetting::first();
@@ -17,12 +20,32 @@ class PageController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
-        // SEO meta (pakai artesaos/seotools yang sudah ada di project)
-        SEOTools::setTitle($page->title . ' | ' . $settings->site_name);
-        SEOTools::setDescription(\Str::limit(strip_tags($page->content), 160));
-        if ($page->thumbnail) {
-            SEOTools::opengraph()->addImage(asset('storage/' . $page->thumbnail));
-        }
+        $siteName = $settings->site_name ?? config('app.name');
+        $pageUrl = route('pages.show', $page->slug);
+        $description = Str::limit(strip_tags($page->content), 160);
+
+        $thumbnailUrl = $this->resolveThumbnailUrl($page->thumbnail);
+
+        $this->setSeo(
+            title: $page->title . ' | ' . $siteName,
+            description: $description,
+            url: $pageUrl,
+            images: array_filter([$thumbnailUrl]),
+            options: [
+                'site_name' => $siteName,
+                'json_ld_type' => 'WebPage',
+                'json_ld_values' => array_filter([
+                    'mainEntityOfPage' => $pageUrl,
+                    'isPartOf' => [
+                        '@type' => 'WebSite',
+                        'name' => $siteName,
+                        'url' => route('home'),
+                    ],
+                    'dateModified' => optional($page->updated_at)->toIso8601String(),
+                ]),
+            ]
+        );
+
         $latestPosts = Post::published()
             ->latest('published_at')
             ->take(4)
@@ -30,16 +53,30 @@ class PageController extends Controller
             ->get();
 
         return view('pages.show', compact('page', 'latestPosts'));
-        // sementara return data mentah, nanti bisa diarahkan ke view frontend
-        // return response()->json([
-        //     'title' => $page->title,
-        //     'slug' => $page->slug,
-        //     'content' => $page->content,
-        //     'thumbnail' => $page->thumbnail ? asset('storage/' . $page->thumbnail) : null,
-        //     'is_active' => $page->is_active,
-        //     'created_at' => $page->created_at,
-        //     'latestPosts' => $latestPosts,
-        // ]);
+    }
 
+    protected function resolveThumbnailUrl(?string $thumbnail): ?string
+    {
+        if (! $thumbnail) {
+            return null;
+        }
+
+        $thumbnail = trim($thumbnail);
+
+        if (Str::startsWith($thumbnail, ['http://', 'https://'])) {
+            return $thumbnail;
+        }
+
+        $thumbnail = ltrim($thumbnail, '/');
+
+        if (Str::startsWith($thumbnail, 'storage/')) {
+            $thumbnail = Str::after($thumbnail, 'storage/');
+        }
+
+        if (Storage::disk('public')->exists($thumbnail)) {
+            return Storage::url($thumbnail);
+        }
+
+        return null;
     }
 }

@@ -1,18 +1,58 @@
 <?php
-// app/Http/Controllers/SearchController.php
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\InteractsWithSeo;
 use App\Models\Post;
 use App\Models\Page;
+use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
 
 class SearchController extends Controller
 {
+    use InteractsWithSeo;
+
     public function index(Request $request)
     {
         $q = trim((string) $request->query('q', ''));
+        $settings = SiteSetting::first();
+        $siteName = $settings->site_name ?? config('app.name');
+        $logoPath = optional($settings)->logo_url;
+        $shareImage = $logoPath ? asset($logoPath) : null;
+
+        $searchLabel = $q !== ''
+            ? __('Cari: :query', ['query' => $q])
+            : __('Pencarian');
+
+        $description = $q !== ''
+            ? __('Hasil pencarian untuk ":query".', ['query' => $q])
+            : __('Cari berita dan halaman di :site.', ['site' => $siteName]);
+
+        $this->setSeo(
+            title: $searchLabel . ' | ' . $siteName,
+            description: $description,
+            url: url()->full(),
+            images: array_filter([$shareImage]),
+            options: [
+                'site_name' => $siteName,
+                'json_ld_type' => $q !== '' ? 'SearchResultsPage' : 'WebPage',
+                'json_ld_name' => $searchLabel,
+                'json_ld_values' => [
+                    'potentialAction' => [
+                        '@type' => 'SearchAction',
+                        'target' => route('search', ['q' => '{search_term_string}']),
+                        'query-input' => 'required name=search_term_string',
+                    ],
+                ],
+            ]
+        );
+
+        $this->setBreadcrumbJsonLd([
+            ['name' => 'Beranda', 'url' => route('home')],
+            ['name' => $searchLabel, 'url' => url()->full()],
+        ]);
+
         $results = new LengthAwarePaginator([], 0, 12);
         // kalau kosong / terlalu pendek, langsung tampilkan form kosong
         if (mb_strlen($q) < 2) {
@@ -88,12 +128,6 @@ class SearchController extends Controller
             $page,
             ['path' => url()->current(), 'query' => ['q' => $q]]
         );
-
-        // (opsional) SEO
-        if (class_exists(\Artesaos\SEOTools\Facades\SEOTools::class)) {
-            \Artesaos\SEOTools\Facades\SEOTools::setTitle('Cari: ' . $q);
-            \Artesaos\SEOTools\Facades\SEOTools::setDescription('Hasil pencarian untuk: ' . $q);
-        }
 
         return view('search.index', [
             'q' => $q,

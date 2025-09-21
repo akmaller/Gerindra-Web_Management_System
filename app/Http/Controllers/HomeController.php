@@ -7,16 +7,15 @@ use App\Models\CompanyProfile;
 use App\Models\HomepageSetting;
 use App\Models\Post;
 use App\Models\SiteSetting;
-use Artesaos\SEOTools\Facades\JsonLd;
-use Artesaos\SEOTools\Facades\OpenGraph;
-use Artesaos\SEOTools\Facades\SEOMeta;
-use Artesaos\SEOTools\Facades\TwitterCard;
+use App\Http\Controllers\Concerns\InteractsWithSeo;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class HomeController extends Controller
 {
+    use InteractsWithSeo;
+
     public function index()
     {
         $settings = SiteSetting::first();
@@ -163,50 +162,55 @@ class HomeController extends Controller
 
         $siteName = $settings->site_name ?? config('app.name');
         $siteDesc = $settings->site_description ?? 'Portal berita terkini.';
+        $homeUrl = route('home');
 
-        SEOMeta::setTitle($siteName);
-        SEOMeta::setDescription($siteDesc);
-        SEOMeta::setCanonical(route('home'));
+        $logoUrl = $this->resolveImageUrl($settings?->logo_path, 'images/example-middle.webp');
 
-        OpenGraph::setTitle($siteName)
-            ->setDescription($siteDesc)
-            ->setType('website')
-            ->setUrl(route('home'))
-            ->addProperty('locale', app()->getLocale());
+        $heroPrimaryImage = $heroSlides->first()['image_url'] ?? null;
 
-        $logoUrl = null;
-        if ($settings?->logo_path) {
-            if (Str::startsWith($settings->logo_path, ['http://', 'https://'])) {
-                $logoUrl = $settings->logo_path;
-            } else {
-                $logoPath = $this->resolveStoragePath($settings->logo_path);
+        $this->setSeo(
+            title: $siteName,
+            description: $siteDesc,
+            url: $homeUrl,
+            images: array_filter([$logoUrl, $heroPrimaryImage]),
+            options: [
+                'type' => 'website',
+                'site_name' => $siteName,
+                'twitter_site' => $profile?->twitter,
+                'json_ld_type' => 'WebSite',
+                'json_ld_values' => array_filter([
+                    'inLanguage' => app()->getLocale(),
+                    'potentialAction' => [
+                        '@type' => 'SearchAction',
+                        'target' => route('search', ['q' => '{search_term_string}']),
+                        'query-input' => 'required name=search_term_string',
+                    ],
+                ]),
+            ]
+        );
 
-                if ($logoPath && Storage::disk('public')->exists($logoPath)) {
-                    $logoUrl = Storage::url($logoPath);
-                }
-            }
+        $sameAs = collect([
+            $profile?->facebook,
+            $profile?->instagram,
+            $profile?->twitter,
+            $profile?->youtube,
+            $profile?->tiktok,
+            $profile?->wikipedia,
+        ])->filter(function (?string $url) {
+            return is_string($url) && trim($url) !== '';
+        })->values()->all();
 
-            if ($logoUrl) {
-                OpenGraph::addImage($logoUrl);
-            }
+        $organizationGraph = array_filter([
+            'name' => $siteName,
+            'url' => $homeUrl,
+            'logo' => $logoUrl,
+            'sameAs' => $sameAs,
+            'description' => $siteDesc,
+        ]);
+
+        if (! empty($organizationGraph)) {
+            $this->addJsonLdGraph('Organization', $organizationGraph);
         }
-
-        TwitterCard::setTitle($siteName)->setSite($profile?->twitter);
-
-        JsonLd::setType('WebSite')
-            ->setTitle($siteName)
-            ->setDescription($siteDesc)
-            ->setUrl(route('home'))
-            ->addImage($logoUrl ?? asset('images/example-middle.webp'));
-        JsonLd::addValue('name', $siteName);
-
-        JsonLd::setType('Organization')
-            ->setUrl(route('home'))
-            ->addImage($logoUrl ?? asset('images/example-middle.webp'));
-
-        JsonLd::addValue('name', $siteName);
-        JsonLd::addValue('logo', $logoUrl ?? asset('images/example-middle.webp'));
-        JsonLd::addValue('description', $siteDesc);
 
         return view('home', compact(
             'settings',
@@ -239,5 +243,26 @@ class HomeController extends Controller
         }
 
         return $path;
+    }
+
+    protected function resolveImageUrl(?string $path, string $fallback): string
+    {
+        if (! $path) {
+            return asset($fallback);
+        }
+
+        $path = trim($path);
+
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return $path;
+        }
+
+        $storagePath = $this->resolveStoragePath($path);
+
+        if ($storagePath && Storage::disk('public')->exists($storagePath)) {
+            return Storage::url($storagePath);
+        }
+
+        return asset($fallback);
     }
 }

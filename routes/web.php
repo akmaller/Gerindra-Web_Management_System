@@ -6,7 +6,6 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ArchiveController;
 use App\Http\Controllers\SearchController;
-use Artesaos\SEOTools\Facades\SEOTools;
 
 // Route::get('/', function () {
 //     return view('welcome');
