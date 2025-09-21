@@ -291,31 +291,30 @@
     @if($categorySections->isNotEmpty())
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 mb-20">
             <div class="mb-6">
-                <h3 class="text-2xl font-bold text-neutral-900">Berita Berdasarkan Kategori</h3>
-                <p class="mt-2 text-sm text-neutral-500">Pilih tiga kategori utama untuk tampil di beranda.</p>
+                <h3 class="text-2xl font-bold text-[color:var(--brand-primary)]">Berita Berdasarkan Kategori</h3>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 @foreach($categorySections as $section)
-                    <div class="flex h-full flex-col rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+                    <div class="flex h-full flex-col border border-[color:var(--brand-primary)] bg-[color:var(--brand-primary)] p-6 shadow-lg">
                         <div class="flex items-center justify-between gap-2">
-                            <h4 class="text-xl font-semibold text-neutral-900">{{ $section['title'] }}</h4>
-                            <a href="{{ $section['more_url'] }}" class="text-xs font-semibold uppercase tracking-wide text-[color:var(--brand-primary)] hover:text-[color:var(--brand-secondary)]">Lihat semua</a>
+                            <h4 class="text-xl font-semibold text-[color:var(--brand-primary-contrast)]">{{ $section['title'] }}</h4>
+                            <a href="{{ $section['more_url'] }}" class="text-xs font-semibold uppercase tracking-wide text-[color:var(--brand-accent)] hover:text-[color:var(--brand-secondary)]">Lihat semua</a>
                         </div>
                         <div class="mt-5 space-y-4">
                             @foreach($section['posts'] as $post)
                                 <div class="flex gap-4">
-                                    <a href="{{ $post->permalink }}" class="block h-20 w-28 flex-shrink-0 overflow-hidden rounded-xl border border-neutral-200">
+                                    <a href="{{ $post->permalink }}" class="block h-20 w-28 flex-shrink-0 overflow-hidden border border-white/30">
                                         @php
                                             $thumbImage = $variantUrl($post->thumbnail, 'small', 'images/example-small.webp');
                                         @endphp
                                         <img src="{{ $thumbImage }}" alt="{{ $post->title }}" class="h-full w-full object-cover transition duration-500 hover:scale-105" loading="lazy">
                                     </a>
                                     <div class="flex flex-1 flex-col justify-between">
-                                        <h5 class="text-base font-semibold leading-snug text-neutral-900">
-                                            <a href="{{ $post->permalink }}" class="hover:text-[color:var(--brand-primary)]">{{ $post->title }}</a>
+                                        <h5 class="text-sm font-semibold leading-snug text-[color:var(--brand-primary-contrast)]">
+                                            <a href="{{ $post->permalink }}" class="text-white hover:text-[color:var(--brand-accent)]">{{ $post->title }}</a>
                                         </h5>
-                                        <div class="text-xs text-neutral-500">
+                                        <div class="text-xs text-white/70">
                                             {{ $post->published_at?->translatedFormat('d M Y') }}
                                         </div>
                                     </div>
