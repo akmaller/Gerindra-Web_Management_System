@@ -16,6 +16,11 @@ class ListMenus extends ListRecords
             CreateAction::make(),
         ];
     }
+
+    protected function getTableReorderColumn(): ?string
+    {
+        return 'sort_order';
+    }
     protected function authorizeAccess(): void
     {
         abort_unless(auth()->user()?->hasAnyRole(['admin', 'editor']), 403);

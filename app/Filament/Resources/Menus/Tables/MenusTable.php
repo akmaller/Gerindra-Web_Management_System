@@ -8,14 +8,20 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class MenusTable
 {
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with('parent'))
+            ->modifyQueryUsing(function (Builder $query) {
+                $query->with('parent')
+                    ->orderBy('location')
+                    ->orderBy('sort_order');
+            })
             ->columns([
                 TextColumn::make('label')
                     ->searchable()
@@ -42,9 +48,11 @@ class MenusTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('location')
-            ->defaultSort('sort_order')
             ->reorderable('sort_order')
+            ->groups([
+                Group::make('location')
+                    ->label('Lokasi'),
+            ])
             ->filters([
                 //
             ])
