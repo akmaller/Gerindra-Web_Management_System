@@ -18,7 +18,6 @@
 </head>
 <body class="bg-neutral-50 text-neutral-900">
     @include('partials.header')
-    @include('partials.category-strip', ['cats' => $catStrip ?? collect()])
 
     <main class="min-h-screen">
         @yield('content')

@@ -6,8 +6,8 @@
 
 <section class="bg-white rounded-2xl shadow ring-1 ring-neutral-200 overflow-hidden">
     {{-- Header gradien --}}
-    <div class="bg-gradient-to-r from-orange-700 to-orange-500 px-4 sm:px-5 py-3">
-        <div class="text-white italic tracking-wider font-extrabold text-lg">
+    <div class="bg-[color:var(--brand-primary)] px-4 sm:px-5 py-3">
+        <div class="text-[color:var(--brand-primary-contrast)] italic tracking-wider font-extrabold text-lg">
             {{ strtoupper($title) }}
         </div>
     </div>
@@ -43,7 +43,7 @@
 
     {{-- Footer link --}}
     <div class="px-4 sm:px-5 py-3">
-        <a href="{{ $moreUrl }}" class="text-sm font-medium text-orange-500 hover:text-orange-700">
+        <a href="{{ $moreUrl }}" class="text-sm font-medium text-[color:var(--brand-primary)] hover:text-[color:var(--brand-secondary)]">
             Lihat lebih banyak →
         </a>
     </div>

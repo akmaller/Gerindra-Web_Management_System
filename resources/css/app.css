@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --brand-primary: #990000;
+    --brand-primary-contrast: #ffffff;
+    --brand-secondary: #e53935;
+    --brand-surface: #f6f0f0;
+    --brand-border: #d1bcbc;
+    --brand-accent: #ffcc00;
+  }
+}
+
 /* gaya kecil opsional */
 img { image-rendering: auto; }
 .ad-slot { margin: .50rem 0; }
@@ -21,4 +32,3 @@ img { image-rendering: auto; }
 .post-content li { margin: .375rem 0; }
 .post-content img { border-radius: .75rem; border: 1px solid #e5e7eb; margin: 1rem 0; }
 .post-content hr { margin: 2rem 0; }
-

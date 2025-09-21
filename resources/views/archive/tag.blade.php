@@ -16,7 +16,7 @@
                 <div class="p-4">
                     @if($post->category)
                         <a href="{{ route('category.show', $post->category->slug) }}"
-                           class="text-xs uppercase tracking-wider text-amber-600 font-semibold">
+                           class="text-xs uppercase tracking-wider text-[color:var(--brand-primary)] font-semibold">
                            {{ $post->category->name }}
                         </a>
                     @endif

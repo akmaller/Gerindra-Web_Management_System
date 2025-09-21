@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Menus\Tables;
 
+use App\Models\Menu;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -14,22 +15,15 @@ class MenusTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with('parent'))
             ->columns([
-                TextColumn::make('parent_id')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('label')
-                    ->searchable(),
+                    ->searchable()
+                    ->formatStateUsing(fn (string $state, Menu $record) => str_repeat('— ', $record->depth) . $state),
                 TextColumn::make('location')
                     ->searchable(),
                 TextColumn::make('item_type')
                     ->searchable(),
-                TextColumn::make('category_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('page_id')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('url')
                     ->searchable(),
                 IconColumn::make('open_in_new_tab')
@@ -48,6 +42,9 @@ class MenusTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('location')
+            ->defaultSort('sort_order')
+            ->reorderable('sort_order')
             ->filters([
                 //
             ])

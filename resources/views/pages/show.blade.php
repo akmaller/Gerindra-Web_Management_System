@@ -5,7 +5,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         {{-- Breadcrumbs sederhana --}}
         <nav class="text-sm text-neutral-500 mb-6">
-            <a href="{{ route('home') }}" class="hover:text-amber-600">Beranda</a>
+            <a href="{{ route('home') }}" class="hover:text-[color:var(--brand-primary)]">Beranda</a>
             <span class="mx-2">/</span>
             <span class="text-neutral-700">{{ $page->title }}</span>
         </nav>

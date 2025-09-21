@@ -29,14 +29,7 @@ class AppServiceProvider extends ServiceProvider
         View::composer(['layouts.*', 'partials.*'], function ($view) {
             $settings = SiteSetting::first();
             $profile = CompanyProfile::first();
-            $menus = Menu::with([
-                'children' => fn($q) => $q->where('is_active', true)->orderBy('sort_order'),
-            ])
-                ->where('location', 'header')
-                ->where('is_active', true)
-                ->whereNull('parent_id')
-                ->orderBy('sort_order')
-                ->get();
+            $menus = Menu::tree('header');
 
             $view->with(compact('settings', 'profile', 'menus'));
 

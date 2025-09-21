@@ -16,13 +16,13 @@
         </a>
         <div class="p-5 space-y-2">
             @if($post->category)
-                <a href="{{ route('category.show', $post->category->slug) }}"
-                   class="text-xs uppercase tracking-wider text-amber-600 font-semibold">
+            <a href="{{ route('category.show', $post->category->slug) }}"
+               class="text-xs uppercase tracking-wider text-[color:var(--brand-primary)] font-semibold">
                     {{ $post->category->name }}
                 </a>
             @endif
             <h3 class="text-lg font-semibold leading-tight">
-                <a href="{{ $post->permalink }}" class="hover:text-amber-600">
+        <a href="{{ $post->permalink }}" class="hover:text-[color:var(--brand-primary)]">
                     {{ $post->title }}
                 </a>
             </h3>

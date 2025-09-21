@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources\Menus\Schemas;
 
+use App\Models\Menu;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section; // container v4
 use Filament\Forms;                      // fields
-use Filament\Forms\Get;
+use Filament\Schemas\Components\Utilities\Get;
+use Illuminate\Support\Collection;
 
 class MenuForm
 {
@@ -21,11 +23,7 @@ class MenuForm
                         // Parent (submenu) – hanya pilih top-level sebagai induk
                         Forms\Components\Select::make('parent_id')
                             ->label('Parent')
-                            ->options(fn() => \App\Models\Menu::query()
-                                ->whereNull('parent_id')
-                                ->orderBy('sort_order')
-                                ->pluck('label', 'id')
-                                ->toArray())
+                            ->options(fn (Get $get, ?Menu $record) => static::parentOptions($get('location') ?? $record?->location, $record))
                             ->searchable()
                             ->preload()
                             ->nullable()
@@ -40,7 +38,8 @@ class MenuForm
                             ->label('Posisi')
                             ->options(['header' => 'Header', 'footer' => 'Footer'])
                             ->default('header')
-                            ->required(),
+                            ->required()
+                            ->live(),
                     ])
                     ->columns(3),
 
@@ -107,5 +106,55 @@ class MenuForm
                     ])
                     ->columns(3),
             ]);
+    }
+
+    protected static function parentOptions(?string $location, ?Menu $current = null): array
+    {
+        if (! $location) {
+            $location = 'header';
+        }
+
+        $menus = Menu::query()
+            ->where('location', $location)
+            ->when($current, fn ($query) => $query->whereKeyNot($current->id))
+            ->orderBy('sort_order')
+            ->orderBy('label')
+            ->get();
+
+        $excludeIds = [];
+
+        if ($current) {
+            $excludeIds = array_merge([$current->id], static::descendantIds($current));
+        }
+
+        $options = [];
+        static::buildOptions($menus, null, '', $options, $excludeIds);
+
+        return $options;
+    }
+
+    protected static function buildOptions(Collection $menus, ?int $parentId, string $prefix, array &$options, array $excludeIds): void
+    {
+        $menus
+            ->filter(fn (Menu $menu) => $menu->parent_id === $parentId)
+            ->sortBy(fn (Menu $menu) => [$menu->sort_order, $menu->label])
+            ->each(function (Menu $menu) use ($menus, $prefix, &$options, $excludeIds): void {
+                if (in_array($menu->id, $excludeIds, true)) {
+                    return;
+                }
+
+                $options[$menu->id] = $prefix . $menu->label;
+
+                static::buildOptions($menus, $menu->id, $prefix . '— ', $options, $excludeIds);
+            });
+    }
+
+    protected static function descendantIds(Menu $menu): array
+    {
+        return Menu::query()
+            ->where('parent_id', $menu->id)
+            ->get()
+            ->flatMap(fn (Menu $child) => array_merge([$child->id], static::descendantIds($child)))
+            ->all();
     }
 }

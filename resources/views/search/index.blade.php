@@ -14,10 +14,10 @@
                 name="q"
                 value="{{ $q }}"
                 placeholder="Cari berita atau halaman…"
-                class="w-full rounded-xl ring-1 ring-neutral-300 focus:ring-amber-500 bg-white px-4 py-3"
+                class="w-full rounded-xl ring-1 ring-neutral-300 focus:ring-[color:var(--brand-primary)] bg-white px-4 py-3"
                 autofocus
             />
-            <button class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-500 text-white hover:bg-amber-600">
+            <button class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-[color:var(--brand-primary)] text-[color:var(--brand-primary-contrast)] hover:bg-[color:var(--brand-secondary)]">
                 <x-bi-search class="w-5 h-5" />
                 Cari
             </button>
@@ -49,12 +49,12 @@
                             </span>
                             <span>{{ \Carbon\Carbon::parse($item['date'])->translatedFormat('d M Y') }}</span>
                         </div>
-                        <a href="{{ $item['url'] }}" class="block font-semibold text-lg leading-snug hover:text-amber-600">
+                        <a href="{{ $item['url'] }}" class="block font-semibold text-lg leading-snug hover:text-[color:var(--brand-primary)]">
                             {{ $item['title'] }}
                         </a>
                         <p class="mt-2 text-sm text-neutral-600">{{ $item['excerpt'] }}</p>
                         <div class="mt-4">
-                            <a href="{{ $item['url'] }}" class="text-sm font-medium text-amber-600 hover:underline">Baca selengkapnya →</a>
+                            <a href="{{ $item['url'] }}" class="text-sm font-medium text-[color:var(--brand-primary)] hover:text-[color:var(--brand-secondary)] hover:underline">Baca selengkapnya →</a>
                         </div>
                     </div>
                 </article>

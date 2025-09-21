@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 class Menu extends Model
 {
@@ -33,6 +34,48 @@ class Menu extends Model
     public function children()
     {
         return $this->hasMany(self::class, 'parent_id')->orderBy('sort_order');
+    }
+
+    public function getDepthAttribute(): int
+    {
+        $depth = 0;
+        $parent = $this->parent;
+
+        while ($parent) {
+            $depth++;
+            $parent = $parent->parent;
+        }
+
+        return $depth;
+    }
+
+    public static function tree(string $location, bool $onlyActive = true): Collection
+    {
+        $menus = static::query()
+            ->where('location', $location)
+            ->when($onlyActive, fn ($query) => $query->where('is_active', true))
+            ->orderBy('sort_order')
+            ->orderBy('label')
+            ->get();
+
+        return static::buildTreeFromCollection($menus);
+    }
+
+    protected static function buildTreeFromCollection(Collection $menus, ?int $parentId = null): Collection
+    {
+        return $menus
+            ->filter(fn (self $menu) => $menu->parent_id === $parentId)
+            ->sortBy(fn (self $menu) => [$menu->sort_order, $menu->label])
+            ->map(function (self $menu) use ($menus) {
+                $parent = $menus->firstWhere('id', $menu->parent_id);
+                $menu->setRelation('parent', $parent);
+
+                $children = static::buildTreeFromCollection($menus, $menu->id);
+                $menu->setRelation('children', $children);
+
+                return $menu;
+            })
+            ->values();
     }
 
     // Opsional: hubungkan jika modelnya ada

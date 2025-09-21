@@ -3,8 +3,9 @@
   <link rel="dns-prefetch" href="{{ config('app.url') }}">
 @endpush
 <header
-    x-data="{ open:false, sub:null }"
-    class="bg-white/90 backdrop-blur border-b border-neutral-200"
+    x-data="{ open:false }"
+    x-on:close-menu.window="open = false"
+    class="relative z-40 bg-white border-b border-neutral-200"
 >
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
 
@@ -17,52 +18,30 @@
                 @endif
             </a>
 
-        {{-- Desktop nav --}}
-        <nav class="hidden md:flex items-center gap-6">
-            @isset($menus)
-                @foreach($menus as $item)
-                    @php $hasChildren = $item->children->isNotEmpty(); @endphp
+        <div class="flex items-center gap-4">
+            {{-- Desktop nav --}}
+            <nav class="hidden md:flex items-center gap-6">
+                @if(isset($menus) && $menus->isNotEmpty())
+                    @include('partials.navigation.desktop-items', ['items' => $menus, 'level' => 0])
+                @endif
+            </nav>
 
-                    @if(!$hasChildren)
-                        <a href="{{ $item->resolved_url }}" class="text-sm font-bold text-neutral-700 hover:text-amber-600">
-                            {{ $item->label }}
-                        </a>
-                    @else
-                        <div class="relative group">
-                            <button
-                                class="text-sm font-bold text-neutral-700 hover:text-amber-600 inline-flex items-center gap-1"
-                                aria-haspopup="true" aria-expanded="false"
-                            >
-                                {{ $item->label }}
-                                <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
-                            </button>
-                            <div class="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition
-                                        absolute left-0  w-52 bg-white shadow-lg ring-1 ring-neutral-200 rounded-xl py-2">
-                                @foreach($item->children as $child)
-                                    <a href="{{ $child->resolved_url }}" class="block px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50">
-                                        {{ $child->label }}
-                                    </a>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-                @endforeach
-            @endisset
-        </nav>
-        <form action="{{ route('search') }}" method="get" class="hidden md:block">
-            <input
-                type="text"
-                name="q"
-                placeholder="Cari…"
-                class="rounded-xl ring-1 ring-neutral-300 bg-white px-3 py-2 text-sm focus:ring-amber-500"
-            />
-        </form>
-        {{-- Social icons (desktop) --}}
-        @if(!empty($profile))
-            <div class="hidden md:flex items-center gap-3 mr-2 text-neutral-500">
-                @include('partials.social-icons', ['profile' => $profile, 'size' => 20])
-            </div>
-        @endif
+            {{-- Social icons (desktop) --}}
+            @if(!empty($profile))
+                <div class="hidden md:flex items-center gap-3 text-[color:var(--brand-primary)] opacity-70">
+                    @include('partials.social-icons', ['profile' => $profile, 'size' => 20])
+                </div>
+            @endif
+
+            <form action="{{ route('search') }}" method="get" class="hidden md:block">
+                <input
+                    type="text"
+                    name="q"
+                    placeholder="Cari…"
+                    class="rounded-xl ring-1 ring-neutral-300 bg-white px-3 py-2 text-sm focus:ring-[color:var(--brand-primary)]"
+                />
+            </form>
+        </div>
         {{-- Mobile hamburger --}}
         {{-- Mobile toggle (hamburger <-> close) --}}
         <button
@@ -96,47 +75,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {{-- Kontainer daftar menu: full screen feel di mobile --}}
         <div class="mt-3 max-h-[calc(100vh-8rem)] overflow-y-auto pb-4">
-            <nav class="space-y-1">
-                @isset($menus)
-                    @foreach($menus as $item)
-                        @php $hasChildren = $item->children->isNotEmpty(); @endphp
-
-                        @if (!$hasChildren)
-                            <a href="{{ $item->resolved_url }}"
-                               @click="open=false"
-                               class="block px-3 py-2 rounded-lg text-sm font-medium text-neutral-800 hover:bg-neutral-100">
-                                {{ $item->label }}
-                            </a>
-                        @else
-                            <div class="border rounded-lg">
-                                <button
-                                    x-on:mouseenter.passive
-                                    x-on:mouseleave.passive
-                                    @click="sub === {{ $item->id }} ? sub = null : sub = {{ $item->id }}"
-                                    class="w-full flex items-center justify-between px-3 py-2 text-left text-sm font-medium"
-                                >
-                                    <span>{{ $item->label }}</span>
-                                    <svg class="h-4 w-4 transition-transform duration-200"
-                                         :class="sub === {{ $item->id }} ? 'rotate-180' : ''"
-                                         viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-
-                                <div x-show="sub === {{ $item->id }}" x-collapse>
-                                    @foreach($item->children as $child)
-                                        <a href="{{ $child->resolved_url }}"
-                                           @click="open=false"
-                                           class="block px-5 py-2 text-sm text-neutral-700 hover:bg-neutral-50">
-                                            {{ $child->label }}
-                                        </a>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
-                    @endforeach
-                @endisset
-            </nav>
+            @if(isset($menus) && $menus->isNotEmpty())
+                @include('partials.navigation.mobile-items', ['items' => $menus, 'level' => 0])
+            @endif
 
             {{-- Ikon sosmed --}}
             @if(!empty($profile))

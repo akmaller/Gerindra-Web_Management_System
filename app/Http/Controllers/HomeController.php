@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Post;
 use App\Models\Category;
-use App\Models\Menu;
-use App\Models\SiteSetting;
 use App\Models\CompanyProfile;
-use Artesaos\SEOTools\Facades\SEOMeta;
-use Artesaos\SEOTools\Facades\OpenGraph;
-use Artesaos\SEOTools\Facades\TwitterCard;
+use App\Models\HomepageSetting;
+use App\Models\Post;
+use App\Models\SiteSetting;
 use Artesaos\SEOTools\Facades\JsonLd;
+use Artesaos\SEOTools\Facades\OpenGraph;
+use Artesaos\SEOTools\Facades\SEOMeta;
+use Artesaos\SEOTools\Facades\TwitterCard;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class HomeController extends Controller
 {
@@ -18,72 +21,146 @@ class HomeController extends Controller
     {
         $settings = SiteSetting::first();
         $profile = CompanyProfile::first();
-        $slugs = ['ekonomi', 'opini', 'olahraga'];
+        $homepage = Schema::hasTable('homepage_settings')
+            ? HomepageSetting::current()
+            : new HomepageSetting();
 
-        $featuredPosts = Post::with('category')
-            ->published()
-            ->where('is_featured', 1)
-            ->orderByDesc('published_at')
-            ->limit(4)
-            ->get();
+        $heroSlides = collect($homepage->hero_slides ?? [])
+            ->filter(fn ($slide) => filled($slide['image'] ?? null))
+            ->map(function (array $slide) {
+                $path = $this->resolveStoragePath($slide['image'] ?? null);
+                $imageUrl = null;
 
-        $categoryBlocks = collect($slugs)->map(function ($slug) {
-            $cat = Category::where('slug', $slug)->where('is_active', true)->first();
+                if ($path) {
+                    if (Str::startsWith($path, ['http://', 'https://'])) {
+                        $imageUrl = $path;
+                    } elseif (Storage::disk('public')->exists($path)) {
+                        $imageUrl = Storage::disk('public')->url($path);
+                    }
+                }
 
-            $posts = Post::with('category')
+                $imageUrl ??= asset('images/example-wide.webp');
+
+                return [
+                    'image_url' => $imageUrl,
+                    'title' => $slide['title'] ?? null,
+                    'subtitle' => $slide['subtitle'] ?? null,
+                    'link_label' => $slide['link_label'] ?? null,
+                    'link_url' => $slide['link_url'] ?? null,
+                ];
+            })
+            ->values();
+
+        if ($heroSlides->isEmpty()) {
+            $heroSlides = Post::with('category')
                 ->published()
-                ->when($cat, fn($q) => $q->where('category_id', $cat->id))
                 ->orderByDesc('published_at')
-                ->limit(4)
-                ->get();
+                ->limit(3)
+                ->get()
+                ->map(function (Post $post) {
+                    $imageUrl = null;
 
-            return [
-                'slug' => $slug,
-                'title' => $cat->name ?? ucfirst($slug),
-                'category' => $cat,
-                'posts' => $posts,
-                'more_url' => $cat ? route('category.show', $cat->slug) : '#',
-            ];
-        })->values();
+                    $path = $this->resolveStoragePath($post->thumbnail);
 
-        // hero: 3 featured terbaru
-        $featured = Post::with('category')
+                    if ($path && Storage::disk('public')->exists($path)) {
+                        $imageUrl = Storage::disk('public')->url($path);
+                    }
+
+                    $imageUrl ??= asset('images/example-middle.webp');
+
+                    return [
+                        'image_url' => $imageUrl,
+                        'title' => $post->title,
+                        'subtitle' => $post->category?->name,
+                        'link_label' => 'Baca selengkapnya',
+                        'link_url' => $post->permalink,
+                    ];
+                });
+        }
+
+        $customButtons = collect($homepage->custom_buttons ?? [])
+            ->filter(fn ($button) => filled($button['label'] ?? null) && filled($button['url'] ?? null))
+            ->map(fn ($button) => [
+                'label' => $button['label'],
+                'url' => $button['url'],
+            ])
+            ->values();
+
+        $managementTeam = collect($homepage->management_team ?? [])
+            ->filter(fn ($member) => filled($member['name'] ?? null) && filled($member['position'] ?? null))
+            ->map(function (array $member) {
+                $photoPath = $member['photo'] ?? null;
+                $photoUrl = null;
+
+                if ($photoPath) {
+                    if (Str::startsWith($photoPath, ['http://', 'https://'])) {
+                        $photoUrl = $photoPath;
+                    } else {
+                        $path = $this->resolveStoragePath($photoPath);
+
+                        if ($path && Storage::disk('public')->exists($path)) {
+                            $photoUrl = Storage::disk('public')->url($path);
+                        }
+                    }
+                }
+
+                return [
+                    'name' => $member['name'],
+                    'position' => $member['position'],
+                    'photo_url' => $photoUrl,
+                ];
+            })
+            ->values();
+
+        $latestPosts = Post::with('category')
             ->published()
-            ->where('is_featured', true)
             ->orderByDesc('published_at')
             ->limit(3)
             ->get();
 
-        // grid: 3 terbaru
-        $latest = Post::with('category')
-            ->published()
-            ->orderByDesc('published_at')
-            ->limit(3)
-            ->get();
+        $tabSections = collect($homepage->tab_sections ?? [])
+            ->filter(fn ($tab) => filled($tab['title'] ?? null) && filled($tab['content'] ?? null))
+            ->map(fn ($tab) => [
+                'title' => $tab['title'],
+                'content' => $tab['content'],
+            ])
+            ->values();
 
-        $latestList = Post::with('category')
-            ->published()
-            ->orderByDesc('published_at')
-            ->skip(3)
-            ->limit(9)
-            ->get();
+        $categorySections = collect($homepage->category_blocks ?? [])
+            ->filter(fn ($block) => filled($block['category_id'] ?? null))
+            ->unique(fn ($block) => $block['category_id'])
+            ->take(3)
+            ->map(function (array $block) {
+                $category = Category::query()
+                    ->where('is_active', true)
+                    ->whereKey($block['category_id'])
+                    ->first();
 
-        // 3 kategori utama (ubah slug sesuai data kamu)
-        $categories = Category::whereIn('slug', ['ekonomi', 'opini', 'olahraga'])
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get()
-            ->keyBy('slug');
+                if (! $category) {
+                    return null;
+                }
 
-        // menu header dengan anak
-        $menus = Menu::with(['children' => fn($q) => $q->where('is_active', true)->orderBy('sort_order')])
-            ->where('location', 'header')
-            ->where('is_active', true)
-            ->whereNull('parent_id')
-            ->orderBy('sort_order')
-            ->get();
+                $posts = Post::with('category')
+                    ->published()
+                    ->where('category_id', $category->id)
+                    ->orderByDesc('published_at')
+                    ->limit(3)
+                    ->get();
 
-        // ====== SEO ======
+                if ($posts->isEmpty()) {
+                    return null;
+                }
+
+                return [
+                    'title' => $block['title'] ?? $category->name,
+                    'category' => $category,
+                    'posts' => $posts,
+                    'more_url' => route('category.show', $category->slug),
+                ];
+            })
+            ->filter()
+            ->values();
+
         $siteName = $settings->site_name ?? config('app.name');
         $siteDesc = $settings->site_description ?? 'Portal berita terkini.';
 
@@ -97,8 +174,21 @@ class HomeController extends Controller
             ->setUrl(route('home'))
             ->addProperty('locale', app()->getLocale());
 
+        $logoUrl = null;
         if ($settings?->logo_path) {
-            OpenGraph::addImage(asset('storage/' . $settings->logo_path));
+            if (Str::startsWith($settings->logo_path, ['http://', 'https://'])) {
+                $logoUrl = $settings->logo_path;
+            } else {
+                $logoPath = $this->resolveStoragePath($settings->logo_path);
+
+                if ($logoPath && Storage::disk('public')->exists($logoPath)) {
+                    $logoUrl = Storage::disk('public')->url($logoPath);
+                }
+            }
+
+            if ($logoUrl) {
+                OpenGraph::addImage($logoUrl);
+            }
         }
 
         TwitterCard::setTitle($siteName)->setSite($profile?->twitter);
@@ -107,19 +197,47 @@ class HomeController extends Controller
             ->setTitle($siteName)
             ->setDescription($siteDesc)
             ->setUrl(route('home'))
-            ->addImage(('storage/' . $settings->logo_path));
+            ->addImage($logoUrl ?? asset('images/example-middle.webp'));
         JsonLd::addValue('name', $siteName);
 
-        // Organization (optional JSON-LD)
         JsonLd::setType('Organization')
             ->setUrl(route('home'))
-            ->addImage(('storage/' . $settings->logo_path));
+            ->addImage($logoUrl ?? asset('images/example-middle.webp'));
 
         JsonLd::addValue('name', $siteName);
-        JsonLd::addValue('logo', ('storage/' . $settings->logo_path));
+        JsonLd::addValue('logo', $logoUrl ?? asset('images/example-middle.webp'));
         JsonLd::addValue('description', $siteDesc);
 
+        return view('home', compact(
+            'settings',
+            'profile',
+            'heroSlides',
+            'customButtons',
+            'latestPosts',
+            'tabSections',
+            'managementTeam',
+            'categorySections'
+        ));
+    }
 
-        return view('home', compact('settings', 'profile', 'menus', 'featured', 'latest', 'latestList', 'categories', 'categoryBlocks', 'featuredPosts'));
+    protected function resolveStoragePath(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        $path = trim($path);
+
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return $path;
+        }
+
+        $path = ltrim($path, '/');
+
+        if (Str::startsWith($path, 'storage/')) {
+            $path = Str::after($path, 'storage/');
+        }
+
+        return $path;
     }
 }

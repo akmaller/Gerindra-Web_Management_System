@@ -2,7 +2,7 @@
 <div class="max-w-7xl mx-auto">
     <x-ad-slot location="footer" />
 </div>
-<footer class="bg-neutral-900 text-neutral-300 py-10 mt-12">
+<footer class="bg-[color:var(--brand-primary)] text-[color:var(--brand-primary-contrast)] py-10 mt-12">
     <div class="container mx-auto px-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
@@ -12,17 +12,17 @@
                     @if(!empty($settings?->logo_path))
                         <img src="{{ asset('storage/' . $settings->logo_path) }}" alt="{{ $settings->site_name }}" class="h-10">
                     @else
-                        <span class="text-xl font-bold text-white">{{ $settings->site_name ?? 'Gerindra-Web_Management' }}</span>
+                        <span class="text-xl font-bold text-[color:var(--brand-primary-contrast)]">{{ $settings->site_name ?? 'Gerindra-Web_Management' }}</span>
                     @endif
                 </div>
-                <p class="text-sm leading-relaxed">
+                <p class="text-sm leading-relaxed text-[color:var(--brand-primary-contrast)] opacity-90">
                     {{ $settings->site_description ?? 'Portal berita Gerindra-Web_Management.' }}
                 </p>
             </div>
 
             {{-- TENGAH: Info Kontak --}}
             <div>
-                <h4 class="text-white font-semibold mb-2">Kontak Kami</h4>
+                <h4 class="text-[color:var(--brand-primary-contrast)] font-semibold mb-2">Kontak Kami</h4>
                 <ul class="space-y-2 text-sm">
                     @if(!empty($profile?->company_name))
                         <li><span class="font-medium"></span> {{ $profile->company_name }}</li>
@@ -34,7 +34,7 @@
                         <li><span class="font-medium">Telepon:</span> {{ $profile->phone }}</li>
                     @endif
                     @if(!empty($profile?->email))
-                        <li><span class="font-medium">Email:</span> <a href="mailto:{{ $profile->email }}" class="hover:text-amber-400">{{ $profile->email }}</a></li>
+                        <li><span class="font-medium">Email:</span> <a href="mailto:{{ $profile->email }}" class="text-[color:var(--brand-primary-contrast)] hover:opacity-80">{{ $profile->email }}</a></li>
                     @endif
                 </ul>
             </div>
@@ -47,7 +47,7 @@
                         @include('partials.social-icons', ['profile' => $settings, 'size' => 22])
                     </div>
                 </div>
-                <div class="text-xs text-neutral-500 mt-6 md:mt-0 text-right md:text-left">
+                <div class="text-xs text-[color:var(--brand-primary-contrast)] mt-6 md:mt-0 text-right md:text-left opacity-70">
                     &copy; {{ date('Y') }} {{ $settings->site_name ?? 'Gerindra-Web_Management' }}. Semua Hak Dilindungi.
                 </div>
             </div>

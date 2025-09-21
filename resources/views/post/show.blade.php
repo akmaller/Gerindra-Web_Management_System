@@ -18,7 +18,7 @@
       <div class="mt-2 flex flex-wrap items-center gap-3 text-sm text-neutral-500">
         @if($post->category)
           <a href="{{ route('category.show', $post->category->slug) }}"
-             class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-amber-800 font-medium hover:bg-amber-200">
+             class="inline-flex items-center rounded-full bg-[color:var(--brand-surface)] px-3 py-1 text-[color:var(--brand-primary)] font-medium hover:bg-white/40">
             {{ $post->category->name }}
           </a>
         @endif
@@ -51,8 +51,8 @@
       @if($post->tags?->count())
         <div class="mt-8 flex flex-wrap items-center gap-2">
           @foreach($post->tags as $tag)
-            <a href="{{ route('tag.show', $tag->slug) }}"
-               class="px-3 py-1 rounded-full bg-neutral-100 hover:bg-amber-100 text-neutral-700 text-sm">
+          <a href="{{ route('tag.show', $tag->slug) }}"
+             class="px-3 py-1 rounded-full bg-neutral-100 hover:bg-[color:var(--brand-surface)] text-neutral-700 text-sm">
               #{{ $tag->name }}
             </a>
           @endforeach
@@ -79,21 +79,21 @@
   {{-- Twitter / X --}}
   <a href="https://twitter.com/intent/tweet?url={{ urlencode($shareUrl) }}&text={{ urlencode($post->title) }}"
      target="_blank" rel="noopener"
-     class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-neutral-100 hover:bg-amber-100 text-sky-500">
+     class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-neutral-100 hover:bg-[color:var(--brand-surface)] text-sky-500">
       <x-bi-twitter-x />
   </a>
 
   {{-- WhatsApp --}}
   <a href="https://wa.me/?text={{ urlencode($post->title . ' ' . $shareUrl) }}"
      target="_blank" rel="noopener"
-     class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-neutral-100 hover:bg-amber-100 text-green-600">
+     class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-neutral-100 hover:bg-[color:var(--brand-surface)] text-green-600">
       <x-bi-whatsapp />
   </a>
 
   {{-- Telegram --}}
   <a href="https://t.me/share/url?url={{ urlencode($shareUrl) }}&text={{ urlencode($post->title) }}"
      target="_blank" rel="noopener"
-     class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-neutral-100 hover:bg-amber-100 text-sky-600">
+     class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-neutral-100 hover:bg-[color:var(--brand-surface)] text-sky-600">
       <x-bi-telegram />
   </a>
 
@@ -101,7 +101,7 @@
   <button type="button"
           x-data
           @click="navigator.clipboard.writeText('{{ $shareUrl }}'); $dispatch('notify', {title:'Link tersalin'})"
-          class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-neutral-100 hover:bg-amber-100 text-neutral-700">
+          class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-neutral-100 hover:bg-[color:var(--brand-surface)] text-neutral-700">
       <x-bi-copy />
   </button>
 </div>
@@ -122,7 +122,7 @@
                 $relwebpSmall  = $relbaseNoExt . '-small.webp';
               @endphp
               <a href="{{ route('posts.show', ['tahun'=>$rel->published_at?->format('Y'),'bulan'=>$rel->published_at?->format('m'),'slug'=>$rel->slug]) }}"
-                 class="group block rounded-xl overflow-hidden ring-1 ring-neutral-200 hover:ring-amber-200 bg-white">
+                 class="group block rounded-xl overflow-hidden ring-1 ring-neutral-200 hover:ring-[color:var(--brand-primary)] bg-white">
                 <div class="aspect-[16/9] overflow-hidden bg-neutral-100">
                   <img src="{{ $relwebpSmall }}" alt="{{ $rel->title }}"
                        class="w-full aspect-[16/9] object-cover group-hover:opacity-95 transition" decoding="async" loading="lazy">

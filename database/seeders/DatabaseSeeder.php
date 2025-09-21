@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\HomepageSetting;
+use Illuminate\Support\Facades\Schema;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -23,6 +25,10 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
+
+        if (Schema::hasTable('homepage_settings')) {
+            HomepageSetting::current();
+        }
 
         // panggil seeder lain
         $this->call([

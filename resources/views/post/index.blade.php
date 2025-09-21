@@ -3,7 +3,7 @@
 @section('content')
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         <nav class="text-sm text-neutral-500 mb-6" aria-label="Breadcrumb">
-            <a href="{{ route('home') }}" class="hover:text-amber-600">Beranda</a>
+            <a href="{{ route('home') }}" class="hover:text-[color:var(--brand-primary)]">Beranda</a>
             <span class="mx-2">/</span>
             <span class="text-neutral-700">Semua Berita</span>
         </nav>
@@ -20,7 +20,7 @@
                             <button id="load-more"
                                     type="button"
                                     data-next="{{ $posts->nextPageUrl() }}"
-                                    class="inline-flex items-center px-5 py-2.5 rounded-full bg-amber-600 text-white text-sm font-semibold hover:bg-amber-500 focus:outline-none focus:ring focus:ring-amber-300">
+                                    class="inline-flex items-center px-5 py-2.5 rounded-full bg-[color:var(--brand-primary)] text-[color:var(--brand-primary-contrast)] text-sm font-semibold hover:bg-[color:var(--brand-secondary)] focus:outline-none focus:ring focus:ring-[color:var(--brand-primary)]">
                                 Load more
                             </button>
                         @endif
