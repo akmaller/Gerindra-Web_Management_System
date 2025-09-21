@@ -13,10 +13,10 @@ class SiteSettingsSeeder extends Seeder
      */
     public function run(): void
     {
-        if (! DB::table('site_settings')->exists()) {
+        if (!DB::table('site_settings')->exists()) {
             DB::table('site_settings')->insert([
                 'site_name' => 'Gerindra-Web_Management',
-                'site_description' => 'Portal berita resmi Gerindra-Web_Management System',
+                'site_description' => 'Portal WEB resmi Gerindra',
                 'logo_path' => 'logo/logo.png',
                 'favicon_path' => 'logo/favicon.png',
                 'created_at' => Carbon::now(),
