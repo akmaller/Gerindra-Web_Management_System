@@ -6,10 +6,12 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use App\Models\Menu;
 use App\Models\SiteSetting;
 use App\Models\CompanyProfile;
 use App\Models\Category;
+use App\Models\ChatbotSetting;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,8 +32,11 @@ class AppServiceProvider extends ServiceProvider
             $settings = SiteSetting::first();
             $profile = CompanyProfile::first();
             $menus = Menu::tree('header');
+            $chatbotSetting = Schema::hasTable('chatbot_settings')
+                ? ChatbotSetting::current()
+                : null;
 
-            $view->with(compact('settings', 'profile', 'menus'));
+            $view->with(compact('settings', 'profile', 'menus', 'chatbotSetting'));
 
         });
         View::composer(['layouts.*', 'home', 'partials.*'], function ($view) {

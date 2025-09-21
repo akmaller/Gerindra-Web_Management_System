@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ArchiveController;
 use App\Http\Controllers\SearchController;
@@ -27,3 +28,6 @@ Route::get('/category/{slug}', [ArchiveController::class, 'category'])->name('ca
 Route::get('/tag/{slug}', [ArchiveController::class, 'tag'])->name('tag.show');
 
 Route::get('/search', [SearchController::class, 'index'])->name('search');
+
+Route::post('/chatbot/message', [ChatbotController::class, 'send'])
+    ->name('chatbot.message');
