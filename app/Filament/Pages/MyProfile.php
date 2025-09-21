@@ -11,8 +11,13 @@ use Filament\Forms\Components\TextInput;      // fields (Forms)
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
-use Illuminate\Support\Facades\Hash;
 use Filament\Actions;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 
 class MyProfile extends Page implements HasSchemas
 {
@@ -69,12 +74,13 @@ class MyProfile extends Page implements HasSchemas
                     ->schema([
                         TextInput::make('current_password')->label('Password Saat Ini')
                             ->password()->revealable()
+                            ->hint('Masukkan password sekarang untuk verifikasi saat mengganti password.')
                             ->dehydrateStateUsing(fn($v) => $v ?: null),
                         TextInput::make('password')->label('Password Baru')
                             ->password()->revealable()->minLength(8)
                             ->dehydrateStateUsing(fn($v) => $v ?: null),
                         TextInput::make('password_confirmation')->label('Konfirmasi Password Baru')
-                            ->password()->revealable()->same('password')
+                            ->password()->revealable()
                             ->dehydrateStateUsing(fn($v) => $v ?: null),
                     ]),
             ])
@@ -99,23 +105,63 @@ class MyProfile extends Page implements HasSchemas
         $u = auth()->user();
         $d = $this->form->getState();
 
-        $u->fill([
-            'avatar_path' => $d['avatar_path'] ?? $u->avatar_path,
-            'name' => $d['name'] ?? $u->name,
-            'email' => $d['email'] ?? $u->email,
-            'phone' => $d['phone'] ?? $u->phone,
-            'bio' => $d['bio'] ?? $u->bio,
-        ]);
+        $guard = 'web';
 
-        if (!empty($d['password'])) {
-            if (empty($d['current_password']) || !Hash::check($d['current_password'], $u->password)) {
-                Notification::make()->danger()->title('Password saat ini tidak sesuai')->send();
-                return;
+        try {
+            $validated = Validator::make($d, [
+                'avatar_path' => ['nullable', 'string'],
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($u->id)],
+                'phone' => ['nullable', 'string', 'max:30'],
+                'bio' => ['nullable', 'string', 'max:1000'],
+                'current_password' => ['nullable', 'required_with:password', 'current_password:' . $guard],
+                'password' => ['nullable', 'string', Password::min(8), 'confirmed', 'different:current_password'],
+                'password_confirmation' => ['nullable', 'string'],
+            ])->validate();
+
+            $u->fill(Arr::only($validated, ['avatar_path', 'name', 'email', 'phone', 'bio']));
+
+            if (! empty($validated['password'])) {
+                if (empty($validated['current_password']) || ! Hash::check($validated['current_password'], $u->getAuthPassword())) {
+                    throw ValidationException::withMessages([
+                        'current_password' => 'Password saat ini tidak sesuai.',
+                    ]);
+                }
+
+                if (Hash::check($validated['password'], $u->getAuthPassword())) {
+                    throw ValidationException::withMessages([
+                        'password' => 'Password baru harus berbeda dari password sekarang.',
+                    ]);
+                }
+
+                $u->password = $validated['password'];
             }
-            $u->password = Hash::make($d['password']);
+
+            $u->save();
+        } catch (ValidationException $exception) {
+            $this->setErrorBag($exception->validator->errors());
+
+            Notification::make()
+                ->danger()
+                ->title('Gagal memperbarui profil')
+                ->body($exception->validator->errors()->first() ?? 'Periksa kembali input Anda.')
+                ->send();
+
+            return;
         }
 
-        $u->save();
+        $this->form->fill([
+            'avatar_path' => $u->avatar_path,
+            'name' => $u->name,
+            'email' => $u->email,
+            'phone' => $u->phone,
+            'bio' => $u->bio,
+            'current_password' => null,
+            'password' => null,
+            'password_confirmation' => null,
+        ]);
+
+        $this->resetErrorBag();
 
         Notification::make()->success()->title('Profil berhasil diperbarui')->send();
     }
