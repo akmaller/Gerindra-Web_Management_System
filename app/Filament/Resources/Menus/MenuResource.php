@@ -33,12 +33,14 @@ class MenuResource extends Resource
     }
 
     protected static ?string $navigationLabel = 'Menu';
+
     protected static ?string $slug = 'menus';
+
     protected static ?string $recordTitleAttribute = 'label';
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->check() && auth()->user()->hasRole('admin');
+        return auth()->check() && auth()->user()->hasAnyRole(['admin', 'editor']);
     }
 
     /** Schemas API */

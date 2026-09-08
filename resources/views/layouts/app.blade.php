@@ -18,9 +18,10 @@
     @stack('head')
 </head>
 <body class="bg-neutral-50 text-neutral-900">
+    <a href="#main-content" class="skip-link">Lewati ke konten utama</a>
     @include('partials.header')
 
-    <main class="min-h-screen">
+    <main id="main-content" tabindex="-1" class="min-h-screen">
         @yield('content')
     </main>
 

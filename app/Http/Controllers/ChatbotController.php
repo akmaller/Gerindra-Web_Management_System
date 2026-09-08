@@ -24,14 +24,16 @@ class ChatbotController extends Controller
 
         $validated = $request->validate([
             'message' => ['required', 'string', 'max:3000'],
-            'history' => ['nullable', 'array'],
-            'history.*.role' => ['required_with:history', 'string'],
-            'history.*.content' => ['required_with:history', 'string'],
+            'history' => ['nullable', 'array', 'max:12'],
+            'history.*.role' => ['required_with:history', 'string', 'in:user,assistant'],
+            'history.*.content' => ['required_with:history', 'string', 'max:3000'],
             'session' => ['nullable', 'string', 'max:120'],
-            'metadata' => ['nullable', 'array'],
+            'metadata' => ['nullable', 'array:page,title'],
+            'metadata.page' => ['nullable', 'string', 'max:2048'],
+            'metadata.title' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $sessionId = $validated['session'] ?? $request->session()->getId();
+        $sessionId = hash_hmac('sha256', $request->session()->getId().':'.($validated['session'] ?? ''), (string) config('app.key'));
         $history = $validated['history'] ?? [];
         $question = $validated['message'];
         $recentHistory = collect($history)
@@ -59,7 +61,7 @@ class ChatbotController extends Controller
 
         $historyJson = json_encode($recentHistory, JSON_UNESCAPED_UNICODE);
         $historyText = collect($recentHistory)
-            ->map(fn ($item) => ($item['role'] ?? 'user') . ': ' . ($item['content'] ?? ''))
+            ->map(fn ($item) => ($item['role'] ?? 'user').': '.($item['content'] ?? ''))
             ->filter()
             ->implode("\n");
 
@@ -111,7 +113,7 @@ class ChatbotController extends Controller
         }
 
         try {
-            $http = Http::timeout(max(15, (int) $settings->request_timeout))
+            $http = Http::connectTimeout(10)->timeout(min(120, max(15, (int) $settings->request_timeout)))
                 ->asJson()
                 ->acceptJson();
 
@@ -141,7 +143,7 @@ class ChatbotController extends Controller
         if (! $response->successful()) {
             Log::warning('Chatbot webhook non-200 response', [
                 'status' => $response->status(),
-                'body' => $response->body(),
+                'response_bytes' => strlen($response->body()),
             ]);
 
             return response()->json([

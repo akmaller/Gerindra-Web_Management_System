@@ -13,6 +13,7 @@ class PostPolicy
         if ($user->hasRole('admin')) {
             return true;
         }
+
         return null;
     }
 
@@ -23,7 +24,7 @@ class PostPolicy
 
     public function view(User $user, Post $post): bool
     {
-        return $user->hasAnyRole(['editor']);
+        return $this->update($user, $post);
     }
 
     public function create(User $user): bool
@@ -33,12 +34,12 @@ class PostPolicy
 
     public function update(User $user, Post $post): bool
     {
-        return $user->hasAnyRole(['editor', 'penulis']) || $post->user_id === $user->id;
+        return $user->hasRole('editor') || ($user->hasRole('penulis') && $post->user_id === $user->id);
     }
 
     public function delete(User $user, Post $post): bool
     {
-        return $user->hasAnyRole(['editor', 'penulis']) || $post->user_id === $user->id;
+        return $user->hasRole('editor') || ($user->hasRole('penulis') && $post->user_id === $user->id);
     }
 
     public function restore(User $user, Post $post): bool

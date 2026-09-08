@@ -16,6 +16,8 @@ use Filament\Tables\Table;
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
+    protected static ?string $modelLabel = 'pengguna';
+    protected static ?string $pluralModelLabel = 'pengguna';
 
     // gunakan getter untuk icon & group agar tidak bentrok tipe parent
     public static function getNavigationIcon(): string|BackedEnum|null

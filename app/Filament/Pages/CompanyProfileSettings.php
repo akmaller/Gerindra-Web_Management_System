@@ -4,22 +4,25 @@ namespace App\Filament\Pages;
 
 use App\Models\CompanyProfile;
 use Filament\Actions;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Schemas\Contracts\HasSchemas;
-use Filament\Schemas\Concerns\InteractsWithSchemas;
-use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Schemas\Schema;
 
 class CompanyProfileSettings extends Page implements HasSchemas
 {
     use InteractsWithSchemas;
 
-    protected static ?string $navigationLabel = 'Company Profile';
-    protected static ?string $title = 'Company Profile';
+    protected static ?string $navigationLabel = 'Profil Organisasi';
+
+    protected static ?string $title = 'Profil Organisasi';
+
     protected static ?string $slug = 'company-profile';
+
     protected string $view = 'filament.pages.company-profile-settings';
 
     public static function getNavigationGroup(): string|\UnitEnum|null
@@ -34,7 +37,7 @@ class CompanyProfileSettings extends Page implements HasSchemas
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->check() && auth()->user()->hasRole('admin');
+        return auth()->check() && auth()->user()->hasAnyRole(['admin', 'editor']);
     }
 
     public static function getNavigationIcon(): string|\BackedEnum|null
@@ -43,6 +46,7 @@ class CompanyProfileSettings extends Page implements HasSchemas
     }
 
     public ?CompanyProfile $record = null;
+
     public ?array $data = [];
 
     public function form(Schema $schema): Schema

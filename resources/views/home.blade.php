@@ -31,6 +31,7 @@
 @endphp
 
 @section('content')
+    <h1 class="sr-only">{{ $settings->site_name ?? config('app.name') }}</h1>
     @if($heroSlides->isNotEmpty())
         <section class="relative w-full overflow-hidden">
             <div
@@ -38,14 +39,16 @@
                     slides: @js($heroSlides),
                     current: 0,
                     timer: null,
-                    interval: 5000,
+                    interval: 7000,
+                    paused: false,
+                    reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
                     init() {
                         if (this.slides.length > 1) {
                             this.start();
                         }
                     },
                     start() {
-                        if (this.slides.length <= 1) {
+                        if (this.paused || this.reducedMotion || this.slides.length <= 1) {
                             return;
                         }
 
@@ -90,38 +93,31 @@
                         this.start();
                     }
                 }"
-                x-init="init()"
                 @mouseenter="stop()"
                 @mouseleave="start()"
+                @focusin="stop()"
+                @focusout="start()"
+                role="region" aria-roledescription="carousel" aria-label="Sorotan utama"
                 class="relative w-full h-[50vh] md:h-[70vh]"
             >
-                <template x-for="(slide, index) in slides" :key="index">
-                    <div
-                        x-show="current === index"
-                        x-transition.opacity.duration.700ms
-                        class="absolute inset-0"
-                    >
-                        <img
-                            :src="slide.image_url"
-                            :alt="slide.title ?? `Slide ${index + 1}`"
-                            class="h-full w-full object-cover"
-                            loading="lazy"
-                        >
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                        <div class="absolute inset-x-0 bottom-0 px-6 pb-16 pt-20 md:px-16 md:pb-20 text-white space-y-4 max-w-5xl">
-                            <p x-show="slide.subtitle" x-text="slide.subtitle" class="text-sm md:text-base text-neutral-200 max-w-xl"></p>
-                            <h2 x-show="slide.title" x-text="slide.title" class="text-3xl md:text-5xl font-bold leading-tight"></h2>
-                            <div x-show="slide.link_url && slide.link_label">
-                                <a
-                                    :href="slide.link_url"
-                                    class="inline-flex items-center rounded-full bg-[color:var(--brand-primary)] px-5 py-2 text-sm font-semibold uppercase tracking-wide text-[color:var(--brand-primary-contrast)] shadow-lg transition hover:bg-[color:var(--brand-secondary)]"
-                                >
-                                    <span x-text="slide.link_label"></span>
-                                </a>
-                            </div>
+                @foreach($heroSlides as $index => $slide)
+                    <div x-show="current === {{ $index }}" @if($index > 0) x-cloak @endif
+                         x-transition.opacity.duration.500ms class="absolute inset-0"
+                         :aria-hidden="current !== {{ $index }}">
+                        <img src="{{ $slide['image_url'] }}" alt="{{ $slide['title'] ?? 'Sorotan utama' }}"
+                             class="h-full w-full object-cover" width="1920" height="1080"
+                             loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
+                             fetchpriority="{{ $index === 0 ? 'high' : 'low' }}" decoding="async">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"></div>
+                        <div class="absolute inset-x-0 bottom-0 px-6 pb-20 pt-20 md:px-16 md:pb-24 text-white space-y-4 max-w-5xl">
+                            @if($slide['subtitle'])<p class="text-sm md:text-base text-neutral-100 max-w-xl">{{ $slide['subtitle'] }}</p>@endif
+                            @if($slide['title'])<h2 class="text-3xl md:text-5xl font-bold leading-tight">{{ $slide['title'] }}</h2>@endif
+                            @if($slide['link_url'] && $slide['link_label'])
+                                <a href="{{ $slide['link_url'] }}" class="inline-flex items-center rounded-full bg-[color:var(--brand-primary)] px-5 py-3 text-sm font-semibold text-white shadow-lg hover:bg-[color:var(--brand-secondary)]">{{ $slide['link_label'] }}</a>
+                            @endif
                         </div>
                     </div>
-                </template>
+                @endforeach
 
                 <template x-if="slides.length > 1">
                     <div class="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between px-4">
@@ -151,11 +147,18 @@
                     </div>
                 </template>
 
+                <button type="button" x-show="slides.length > 1 && !reducedMotion"
+                    @click="paused = !paused; paused ? stop() : start()"
+                    :aria-pressed="paused" :aria-label="paused ? 'Putar slide otomatis' : 'Jeda slide otomatis'"
+                    class="absolute right-4 top-4 rounded-full bg-black/50 px-4 py-2 text-xs font-medium text-white hover:bg-black/70"
+                    x-text="paused ? 'Putar' : 'Jeda'">Jeda</button>
                 <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex space-x-3" x-show="slides.length > 1">
                     <template x-for="(slide, index) in slides" :key="`dot-${index}`">
                         <button
                             type="button"
-                            class="h-2 w-10 rounded-full transition"
+                            class="h-3 w-10 rounded-full transition ring-offset-4 ring-offset-transparent"
+                            :aria-label="`Tampilkan slide ${index + 1}`"
+                            :aria-current="current === index ? 'true' : 'false'"
                             :class="current === index ? 'bg-white' : 'bg-white/40'"
                             @click.prevent="go(index)"
                         ></button>
@@ -185,7 +188,7 @@
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
         <div class="flex items-center justify-between gap-4 mb-6">
             <h3 class="text-2xl font-bold text-neutral-900">Berita Terbaru</h3>
-            <a href="{{ route('posts.index') }}" class="text-sm font-semibold text-[color:var(--brand-primary-contrast)] md:text-[color:var(--brand-primary)] hover:text-[color:var(--brand-secondary)]">Lihat semua</a>
+            <a href="{{ route('posts.index') }}" class="text-sm font-semibold text-[color:var(--brand-primary)] hover:text-[color:var(--brand-secondary)]">Lihat semua</a>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

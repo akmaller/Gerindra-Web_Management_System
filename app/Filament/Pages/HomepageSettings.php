@@ -23,13 +23,18 @@ class HomepageSettings extends Page implements HasSchemas
 {
     use InteractsWithSchemas;
 
-    protected static ?string $navigationLabel = 'Homepage Settings';
-    protected static ?string $title = 'Homepage Settings';
+    protected static ?string $navigationLabel = 'Pengaturan Beranda';
+
+    protected static ?string $title = 'Pengaturan Beranda';
+
     protected static ?string $slug = 'homepage-settings';
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-home-modern';
+
     protected string $view = 'filament.pages.homepage-settings';
 
     public ?HomepageSetting $record = null;
+
     public ?array $data = [];
 
     public static function getNavigationGroup(): string|\UnitEnum|null
@@ -44,7 +49,7 @@ class HomepageSettings extends Page implements HasSchemas
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->check() && auth()->user()->hasRole('admin');
+        return auth()->check() && auth()->user()->hasAnyRole(['admin', 'editor']);
     }
 
     public function form(Schema $schema): Schema
@@ -89,7 +94,7 @@ class HomepageSettings extends Page implements HasSchemas
                                     ->maxLength(255),
                             ])
                             ->columns(2)
-                            ->itemLabel(fn(array $state): ?string => $state['title'] ?? null),
+                            ->itemLabel(fn (array $state): ?string => $state['title'] ?? null),
                     ]),
 
                 Section::make('Custom Button')
@@ -160,7 +165,7 @@ class HomepageSettings extends Page implements HasSchemas
                                     ->label('Kategori')
                                     ->required()
                                     ->searchable()
-                                    ->options(fn() => Category::where('is_active', true)->orderBy('name')->pluck('name', 'id')),
+                                    ->options(fn () => Category::where('is_active', true)->orderBy('name')->pluck('name', 'id')),
                                 TextInput::make('title')
                                     ->label('Judul Section')
                                     ->helperText('Kosongkan untuk menggunakan nama kategori.')
@@ -194,7 +199,7 @@ class HomepageSettings extends Page implements HasSchemas
 
                                     ->required(),
                             ])
-                            ->itemLabel(fn(array $state): ?string => $state['title'] ?? null)
+                            ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
                             ->columns(1),
                     ]),
             ]);

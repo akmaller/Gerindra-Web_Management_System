@@ -10,7 +10,8 @@
             @mouseenter="open = true"
             @mouseleave="open = false"
             @focusin="open = true"
-            @focusout="open = false"
+            @focusout="if (!$el.contains($event.relatedTarget)) open = false"
+            @keydown.escape.stop="open = false"
         >
             <a
                 href="{{ $item->resolved_url }}"
@@ -49,6 +50,9 @@
             x-data="{ open: false }"
             @mouseenter="open = true"
             @mouseleave="open = false"
+            @focusin="open = true"
+            @focusout="if (!$el.contains($event.relatedTarget)) open = false"
+            @keydown.escape.stop="open = false"
         >
             <a
                 href="{{ $item->resolved_url }}"

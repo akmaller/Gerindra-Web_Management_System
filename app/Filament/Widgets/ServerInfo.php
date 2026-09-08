@@ -7,8 +7,14 @@ use Illuminate\Support\Facades\DB;
 
 class ServerInfo extends Widget
 {
+    public static function canView(): bool
+    {
+        return auth()->user()?->hasRole('admin') ?? false;
+    }
+
     // v4: properti non-static
     protected ?string $heading = 'Server Info';
+
     protected string $view = 'filament.widgets.server-info';
 
     protected function getViewData(): array
@@ -20,11 +26,11 @@ class ServerInfo extends Widget
         $uploadMax = ini_get('upload_max_filesize') ?: 'N/A';
 
         $items = [
-            ['label' => 'PHP', 'value' => php_sapi_name() . ' - V' . PHP_VERSION, 'meta' => 'PHP Server: '],
-            ['label' => 'Laravel', 'value' => (config('app.debug') ? 'debug:ON' : 'debug:OFF') . ' • V' . app()->version(), 'meta' => 'Laravel: ' . config('app.env')],
-            ['label' => 'Database', 'value' => $dbDriver . ' - V' . $dbVersion, 'meta' => "Database: "],
-            ['label' => 'Memory', 'value' => 'Limit: ' . $memoryLimit . " • Post: {$postMax} • Upload: {$uploadMax}", 'meta' => "PHP Config"],
-            ['label' => 'Timezone', 'value' => now()->toDateTimeString() . ' ' . date_default_timezone_get(), 'meta' => "Timezone: "],
+            ['label' => 'PHP', 'value' => php_sapi_name().' - V'.PHP_VERSION, 'meta' => 'PHP Server: '],
+            ['label' => 'Laravel', 'value' => (config('app.debug') ? 'debug:ON' : 'debug:OFF').' • V'.app()->version(), 'meta' => 'Laravel: '.config('app.env')],
+            ['label' => 'Database', 'value' => $dbDriver.' - V'.$dbVersion, 'meta' => 'Database: '],
+            ['label' => 'Memory', 'value' => 'Limit: '.$memoryLimit." • Post: {$postMax} • Upload: {$uploadMax}", 'meta' => 'PHP Config'],
+            ['label' => 'Timezone', 'value' => now()->toDateTimeString().' '.date_default_timezone_get(), 'meta' => 'Timezone: '],
         ];
 
         return compact('items');
@@ -55,11 +61,13 @@ class ServerInfo extends Widget
 
     private function formatBytes($bytes): string
     {
-        if (!is_numeric($bytes) || $bytes <= 0)
+        if (! is_numeric($bytes) || $bytes <= 0) {
             return 'N/A';
+        }
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
         $pow = (int) floor(log($bytes, 1024));
         $pow = min($pow, count($units) - 1);
-        return number_format($bytes / (1024 ** $pow), 2) . ' ' . $units[$pow];
+
+        return number_format($bytes / (1024 ** $pow), 2).' '.$units[$pow];
     }
 }

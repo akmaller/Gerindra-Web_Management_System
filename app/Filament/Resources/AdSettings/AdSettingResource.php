@@ -6,26 +6,31 @@ use App\Filament\Resources\AdSettings\Pages\CreateAdSetting;
 use App\Filament\Resources\AdSettings\Pages\EditAdSetting;
 use App\Filament\Resources\AdSettings\Pages\ListAdSettings;
 use App\Models\AdSetting;
-use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Tables;
-use Filament\Tables\Columns\IconColumn;
-
 use BackedEnum;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Schemas\Components\Section;
-
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Textarea;
+use Filament\Tables;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Table;
 
 class AdSettingResource extends Resource
 {
     protected static ?string $model = AdSetting::class;
 
+    protected static ?string $navigationLabel = 'Pengaturan Iklan';
+
+    protected static ?string $modelLabel = 'pengaturan iklan';
+
+    protected static ?string $pluralModelLabel = 'pengaturan iklan';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'AdSettingResource';
+
     public static function getNavigationIcon(): string
     {
         return 'heroicon-o-rectangle-group';
@@ -40,7 +45,6 @@ class AdSettingResource extends Resource
     {
         return '5';
     }
-
 
     public static function form(Schema $schema): Schema
     {
@@ -80,7 +84,7 @@ class AdSettingResource extends Resource
                 IconColumn::make('footer_enabled')->label('Ftr')->boolean(),
                 Tables\Columns\TextColumn::make('updated_at')->label('Diubah')->dateTime()->sortable(),
             ])
-            ->recordUrl(fn($record) => static::getUrl('edit', ['record' => $record]))
+            ->recordUrl(fn ($record) => static::getUrl('edit', ['record' => $record]))
             ->bulkActions([]);
     }
 

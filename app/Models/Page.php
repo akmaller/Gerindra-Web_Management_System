@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
 use App\Support\ImageVariants;
+use App\Support\UniqueSlug;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Page extends Model
 {
@@ -21,25 +21,21 @@ class Page extends Model
     protected static function booted(): void
     {
         static::creating(function (Page $page) {
-            if (blank($page->slug)) {
-                $page->slug = Str::slug($page->title);
-            }
+            $page->slug = UniqueSlug::for(self::class, $page->slug ?: $page->title);
         });
 
-        static::updating(function (Page $page) {
-            if ($page->isDirty('title')) {
-                $page->slug = Str::slug($page->title);
-            }
-        });
+        static::updating(function (Page $page) {});
 
         static::saved(function (Page $page): void {
             $col = 'thumbnail'; // kamu sudah memakai kolom ini
             $path = $page->{$col} ?? null;
 
-            if (!$path)
+            if (! $path || (! $page->wasRecentlyCreated && ! $page->wasChanged('thumbnail'))) {
                 return;
-            if (!Storage::disk('public')->exists($path))
+            }
+            if (! Storage::disk('public')->exists($path)) {
                 return;
+            }
 
             try {
                 // generate 3 ukuran + webp
@@ -49,9 +45,8 @@ class Page extends Model
 
                 \Log::info("Image variants generated for: {$path}");
             } catch (\Throwable $e) {
-                \Log::warning("Variants failed: " . $e->getMessage());
+                \Log::warning('Variants failed: '.$e->getMessage());
             }
         });
     }
-
 }

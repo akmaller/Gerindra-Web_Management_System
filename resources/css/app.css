@@ -32,3 +32,17 @@ img { image-rendering: auto; }
 .post-content li { margin: .375rem 0; }
 .post-content img { border-radius: .75rem; border: 1px solid #e5e7eb; margin: 1rem 0; }
 .post-content hr { margin: 2rem 0; }
+
+/* Keyboard access and readable long content across small screens. */
+:focus-visible { outline: 3px solid #b91c1c; outline-offset: 4px; }
+.skip-link { position: fixed; z-index: 100; top: .75rem; left: .75rem; transform: translateY(-200%); background: white; color: #990000; padding: .75rem 1rem; border-radius: .5rem; }
+.skip-link:focus { transform: translateY(0); }
+.post-content { overflow-wrap: anywhere; }
+.post-content img, .post-content video, .post-content iframe { max-width: 100%; }
+.post-content table { display: block; max-width: 100%; overflow-x: auto; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+.footer-social a { color: #fff; opacity: .85; }
+.footer-social a:hover { opacity: 1; }

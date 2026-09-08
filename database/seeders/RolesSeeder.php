@@ -14,10 +14,5 @@ class RolesSeeder extends Seeder
             Role::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
         }
 
-        // jadikan user pertamamu sebagai admin
-        $user = \App\Models\User::first();
-        if ($user && !$user->hasRole('admin')) {
-            $user->assignRole('admin');
-        }
     }
 }

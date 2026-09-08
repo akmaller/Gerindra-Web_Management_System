@@ -16,8 +16,9 @@ class EditPost extends EditRecord
             DeleteAction::make(),
         ];
     }
+
     protected function authorizeAccess(): void
     {
-        abort_unless(auth()->user()?->hasAnyRole(['admin', 'editor', 'penulis']), 403);
+        parent::authorizeAccess();
     }
 }

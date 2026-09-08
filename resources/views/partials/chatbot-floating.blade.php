@@ -186,13 +186,11 @@
                     }
 
                     const cleaned = this.stripHtml(value ?? '');
-                    return cleaned.replace(/\n/g, '<br />');
+                    return cleaned;
                 },
 
                 stripHtml(text) {
-                    const container = document.createElement('div');
-                    container.innerHTML = String(text ?? '');
-                    return (container.textContent || container.innerText || '').trim();
+                    return String(text ?? '').trim();
                 },
 
                 isEmptyValue(value) {
@@ -365,7 +363,7 @@
                                     'bg-neutral-100 text-neutral-900 rounded-bl-sm border border-neutral-200': message.role === 'assistant',
                                     'bg-amber-100 text-amber-900 text-xs rounded-bl-sm border border-amber-200': message.role === 'system'
                                 }"
-                                x-html="message.display"
+                                x-text="message.display" style="white-space: pre-wrap; overflow-wrap: anywhere"
                             ></div>
                         </div>
                     </template>

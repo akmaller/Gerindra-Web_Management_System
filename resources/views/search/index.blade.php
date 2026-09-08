@@ -6,6 +6,8 @@
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
+    <h1 class="text-2xl font-bold mb-5">Cari berita dan halaman</h1>
+    @error('q')<p role="alert" class="mb-4 text-red-700">{{ $message }}</p>@enderror
     {{-- Form pencarian --}}
     <form action="{{ route('search') }}" method="get" class="mb-6">
         <div class="flex items-center gap-3">
@@ -15,7 +17,8 @@
                 value="{{ $q }}"
                 placeholder="Cari berita atau halaman…"
                 class="w-full rounded-xl ring-1 ring-neutral-300 focus:ring-[color:var(--brand-primary)] bg-white px-4 py-3"
-                autofocus
+                aria-label="Cari berita atau halaman"
+                maxlength="200"
             />
             <button class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-[color:var(--brand-primary)] text-[color:var(--brand-primary-contrast)] hover:bg-[color:var(--brand-secondary)]">
                 <x-bi-search class="w-5 h-5" />
@@ -39,7 +42,7 @@
                 <article class="rounded-2xl ring-1 ring-neutral-200 overflow-hidden bg-white hover:shadow-md transition">
                     @if($item['thumb'])
                         <a href="{{ $item['url'] }}">
-                            <img src="{{ $item['thumb'] }}" alt="{{ $item['title'] }}" class="w-full h-40 object-cover">
+                            <img src="{{ $item['thumb'] }}" alt="{{ $item['title'] }}" class="w-full h-40 object-cover" loading="lazy" decoding="async" width="640" height="360">
                         </a>
                     @endif
                     <div class="p-4">

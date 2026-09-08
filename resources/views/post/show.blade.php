@@ -41,7 +41,7 @@
 
       {{-- Isi --}}
       <div class="prose prose-neutral max-w-none mt-6 post-content">
-        {!! $post->content !!}
+        {!! str($post->content)->sanitizeHtml() !!}
       </div>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <x-ad-slot location="below_post" />
@@ -60,7 +60,7 @@
       @endif
 
 {{-- SHARE --}}
-<div class="mt-8 flex items-center gap-3">
+<div class="mt-8 flex flex-wrap items-center gap-3" x-data="{ copied: false, copyError: false }">
   <span class="text-sm font-medium text-neutral-600">Bagikan:</span>
   @php
       $shareUrl = route('posts.show', [
@@ -71,39 +71,44 @@
   @endphp
 
   {{-- Facebook --}}
-  <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($shareUrl) }}"
+  <a aria-label="Bagikan ke Facebook (tab baru)" class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-neutral-100" href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($shareUrl) }}"
      target="_blank" rel="noopener">
       <x-bi-facebook class="w-4 h-4 text-blue-600"/>
   </a>
 
   {{-- Twitter / X --}}
-  <a href="https://twitter.com/intent/tweet?url={{ urlencode($shareUrl) }}&text={{ urlencode($post->title) }}"
+  <a aria-label="Bagikan ke X (tab baru)" href="https://twitter.com/intent/tweet?url={{ urlencode($shareUrl) }}&text={{ urlencode($post->title) }}"
      target="_blank" rel="noopener"
-     class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-neutral-100 hover:bg-[color:var(--brand-surface)] text-sky-500">
+     class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-neutral-100 hover:bg-[color:var(--brand-surface)] text-sky-500">
       <x-bi-twitter-x />
   </a>
 
   {{-- WhatsApp --}}
-  <a href="https://wa.me/?text={{ urlencode($post->title . ' ' . $shareUrl) }}"
+  <a aria-label="Bagikan ke WhatsApp (tab baru)" href="https://wa.me/?text={{ urlencode($post->title . ' ' . $shareUrl) }}"
      target="_blank" rel="noopener"
-     class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-neutral-100 hover:bg-[color:var(--brand-surface)] text-green-600">
+     class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-neutral-100 hover:bg-[color:var(--brand-surface)] text-green-600">
       <x-bi-whatsapp />
   </a>
 
   {{-- Telegram --}}
-  <a href="https://t.me/share/url?url={{ urlencode($shareUrl) }}&text={{ urlencode($post->title) }}"
+  <a aria-label="Bagikan ke Telegram (tab baru)" href="https://t.me/share/url?url={{ urlencode($shareUrl) }}&text={{ urlencode($post->title) }}"
      target="_blank" rel="noopener"
-     class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-neutral-100 hover:bg-[color:var(--brand-surface)] text-sky-600">
+     class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-neutral-100 hover:bg-[color:var(--brand-surface)] text-sky-600">
       <x-bi-telegram />
   </a>
 
   {{-- Copy Link --}}
   <button type="button"
-          x-data
-          @click="navigator.clipboard.writeText('{{ $shareUrl }}'); $dispatch('notify', {title:'Link tersalin'})"
-          class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-neutral-100 hover:bg-[color:var(--brand-surface)] text-neutral-700">
-      <x-bi-copy />
+          aria-label="Salin tautan berita"
+          @click="copied = false; copyError = false; if (navigator.clipboard) { navigator.clipboard.writeText(@js($shareUrl)).then(() => copied = true).catch(() => copyError = true) } else { copyError = true }"
+          class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-neutral-100 hover:bg-[color:var(--brand-surface)] text-neutral-700">
+      <x-bi-copy aria-hidden="true" />
   </button>
+  <span x-cloak x-show="copied" role="status" class="text-sm text-green-700">Tautan tersalin.</span>
+  <div x-cloak x-show="copyError" class="w-full text-sm">
+      <label for="share-link">Salin tautan ini secara manual:</label>
+      <input id="share-link" type="text" readonly value="{{ $shareUrl }}" @click="$el.select()" class="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2">
+  </div>
 </div>
 
       {{-- ARTIKEL TERKAIT --}}

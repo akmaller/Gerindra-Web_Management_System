@@ -33,14 +33,17 @@ class PageResource extends Resource
     }
 
     protected static ?string $navigationLabel = 'Halaman';
+
     protected static ?string $slug = 'pages';
+
     protected static ?string $recordTitleAttribute = 'title';
 
     // hanya admin yang melihat menu ini
     public static function shouldRegisterNavigation(): bool
     {
         $user = auth()->user();
-        return $user?->hasAnyRole(['admin', 'editor', 'penulis']) ?? false;
+
+        return $user?->hasAnyRole(['admin', 'editor']) ?? false;
     }
 
     /** FORM (Schemas API) */
@@ -53,7 +56,11 @@ class PageResource extends Resource
                     ->label('Judul')
                     ->required()
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn($state, callable $set) => $set('slug', \Str::slug($state))),
+                    ->afterStateUpdated(function ($state, callable $set, string $operation) {
+                        if ($operation === 'create') {
+                            $set('slug', \Str::slug($state));
+                        }
+                    }),
 
                 Forms\Components\TextInput::make('slug')
                     ->label('Slug')
@@ -99,7 +106,7 @@ class PageResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')->label('Dibuat')->dateTime()->since(),
             ])
             // klik baris langsung ke halaman edit
-            ->recordUrl(fn($record) => static::getUrl('edit', ['record' => $record]))
+            ->recordUrl(fn ($record) => static::getUrl('edit', ['record' => $record]))
             ->bulkActions([]); // kosongkan dulu agar aman dengan stack kamu
     }
 

@@ -41,13 +41,13 @@
 
             {{-- KANAN: Copyright --}}
             <div class="flex flex-col justify-between">
-                <div class="text-sm text-right md:text-left">
+                <div class="text-sm text-left">
                     <p class="mb-2">Ikuti Kami:</p>
-                    <div class="flex space-x-3 justify-end md:justify-start">
-                        @include('partials.social-icons', ['profile' => $settings, 'size' => 22])
+                    <div class="footer-social flex space-x-3 justify-start">
+                        @include('partials.social-icons', ['profile' => $profile, 'size' => 22])
                     </div>
                 </div>
-                <div class="text-xs text-[color:var(--brand-primary-contrast)] mt-6 md:mt-0 text-right md:text-left opacity-70">
+                <div class="text-xs text-[color:var(--brand-primary-contrast)] mt-6 md:mt-0 text-left opacity-70">
                     &copy; {{ date('Y') }} {{ $settings->site_name ?? 'Gerindra-Web_Management' }}. Semua Hak Dilindungi.
                 </div>
             </div>

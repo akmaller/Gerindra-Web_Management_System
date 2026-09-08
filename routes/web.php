@@ -1,12 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PageController;
-use App\Http\Controllers\PostController;
+use App\Http\Controllers\ArchiveController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ArchiveController;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\SearchController;
+use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -30,4 +30,4 @@ Route::get('/tag/{slug}', [ArchiveController::class, 'tag'])->name('tag.show');
 Route::get('/search', [SearchController::class, 'index'])->name('search');
 
 Route::post('/chatbot/message', [ChatbotController::class, 'send'])
-    ->name('chatbot.message');
+    ->middleware('throttle:20,1')->name('chatbot.message');

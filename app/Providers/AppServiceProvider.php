@@ -2,16 +2,14 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Schema;
-use App\Models\Menu;
-use App\Models\SiteSetting;
-use App\Models\CompanyProfile;
 use App\Models\Category;
 use App\Models\ChatbotSetting;
+use App\Models\CompanyProfile;
+use App\Models\Menu;
+use App\Models\SiteSetting;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        View::composer(['layouts.*', 'partials.*'], function ($view) {
+        View::composer(['layouts.app'], function ($view) {
             $settings = SiteSetting::first();
             $profile = CompanyProfile::first();
             $menus = Menu::tree('header');
@@ -39,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
             $view->with(compact('settings', 'profile', 'menus', 'chatbotSetting'));
 
         });
-        View::composer(['layouts.*', 'home', 'partials.*'], function ($view) {
+        View::composer(['layouts.app'], function ($view) {
             $catStrip = Category::where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name', 'slug']); // kolom color opsional

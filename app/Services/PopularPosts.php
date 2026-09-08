@@ -21,7 +21,7 @@ class PopularPosts
 
         // Dedup sederhana: 1 hit / post / session / N menit
         $key = sprintf('pv:%s:%s', $post->id, $sessionId);
-        if (Cache::has($key)) {
+        if (! Cache::add($key, 1, now()->addMinutes($dedupMinutes))) {
             return;
         }
 
@@ -34,13 +34,6 @@ class PopularPosts
             'viewed_at' => now(),
         ]);
 
-        // Set dedup TTL
-        Cache::put($key, 1, now()->addMinutes($dedupMinutes));
-
-        // (opsional) invalidasi cache popular untuk periode aktif
-        Cache::forget('popular:today:5');
-        Cache::forget('popular:week:5');
-        Cache::forget('popular:month:5');
     }
 
     /**
@@ -51,10 +44,13 @@ class PopularPosts
     {
         [$start, $end] = self::periodBounds($period);
 
-        $cacheKey = "popular:{$period}:{$limit}";
+        $version = Cache::get('popular:version', 'initial');
+        $cacheKey = "popular:{$version}:{$period}:{$limit}";
+
         return Cache::remember($cacheKey, now()->addMinutes(5), function () use ($start, $end, $limit, $period) {
             $query = PostView::query()
-                ->when($period !== 'all', fn($q) => $q->whereBetween('viewed_at', [$start, $end]))
+                ->whereHas('post', fn ($q) => $q->published())
+                ->when($period !== 'all', fn ($q) => $q->whereBetween('viewed_at', [$start, $end]))
                 ->selectRaw('post_id, COUNT(*) as views')
                 ->groupBy('post_id')
                 ->orderByDesc('views')
@@ -62,15 +58,16 @@ class PopularPosts
                 ->get();
 
             // Ambil post lengkap + urutkan sesuai agregat
-            $posts = Post::with(['categories'])
+            $posts = Post::published()->with(['categories'])
                 ->whereIn('id', $query->pluck('post_id'))
                 ->get()
                 ->keyBy('id');
 
             // Kembalikan dalam urutan populer
-            return $query->map(fn($row) => tap($posts[$row->post_id] ?? null, function ($p) use ($row) {
-                if ($p)
+            return $query->map(fn ($row) => tap($posts[$row->post_id] ?? null, function ($p) use ($row) {
+                if ($p) {
                     $p->aggregated_views = (int) $row->views;
+                }
             }))->filter()->values();
         });
     }

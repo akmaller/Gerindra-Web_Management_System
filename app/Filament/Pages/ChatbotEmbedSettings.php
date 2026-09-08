@@ -24,12 +24,17 @@ class ChatbotEmbedSettings extends Page implements HasSchemas
     use InteractsWithSchemas;
 
     protected static ?string $navigationLabel = 'Chatbot Embed';
+
     protected static ?string $title = 'Pengaturan Chatbot Embed';
+
     protected static ?string $slug = 'chatbot-embed';
+
     protected static BackedEnum|string|null $navigationIcon = 'heroicon-o-chat-bubble-left-right';
+
     protected string $view = 'filament.pages.chatbot-embed-settings';
 
     public ?ChatbotSetting $record = null;
+
     public ?array $data = [];
 
     public static function getNavigationGroup(): string|\UnitEnum|null
@@ -70,7 +75,7 @@ class ChatbotEmbedSettings extends Page implements HasSchemas
                             ->label('Batas Waktu Request (detik)')
                             ->numeric()
                             ->minValue(15)
-                            ->maxValue(600)
+                            ->maxValue(120)
                             ->default(180)
                             ->helperText('Pastikan selaras dengan timeout workflow n8n.'),
                     ]),
@@ -133,7 +138,7 @@ class ChatbotEmbedSettings extends Page implements HasSchemas
                             ->visibility('public')
                             ->helperText('Kosongkan untuk menggunakan avatar bawaan.')
                             ->getUploadedFileNameForStorageUsing(
-                                fn ($file) => (string) Str::uuid() . '.' . $file->getClientOriginalExtension()
+                                fn ($file) => (string) Str::uuid().'.'.$file->getClientOriginalExtension()
                             ),
                     ]),
 

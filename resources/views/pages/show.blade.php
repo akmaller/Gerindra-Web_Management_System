@@ -31,7 +31,7 @@
 
                 {{-- Isi halaman (HTML) --}}
                 <div class="prose prose-neutral max-w-none mt-6 post-content">
-                    {!! $page->content !!}
+                    {!! str($page->content)->sanitizeHtml() !!}
                 </div>
 
                 @if($page->attachment_path)

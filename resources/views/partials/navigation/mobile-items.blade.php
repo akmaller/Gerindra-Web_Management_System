@@ -13,7 +13,11 @@
                     href="{{ $item->resolved_url }}"
                     class="flex-1 rounded-lg px-3 py-2 text-sm font-medium text-[color:var(--brand-primary)] hover:bg-neutral-100"
                     @if($item->open_in_new_tab) target="_blank" rel="noopener" @endif
-                    @click="$dispatch('close-menu')"
+                    @if($hasChildren && $item->resolved_url === '#')
+                        @click.prevent="open = !open" :aria-expanded="open"
+                    @else
+                        @click="$dispatch('close-menu')"
+                    @endif
                 >
                     {{ $item->label }}
                 </a>
@@ -21,7 +25,8 @@
                 @if($hasChildren)
                     <button
                         type="button"
-                        class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-600"
+                        aria-label="Buka submenu {{ $item->label }}" :aria-expanded="open"
+                        class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-neutral-100 text-neutral-600"
                         @click.prevent="open = !open"
                     >
                         <svg :class="{ 'rotate-180': open }" class="h-4 w-4 transition-transform" viewBox="0 0 20 20" fill="currentColor">
@@ -32,7 +37,7 @@
             </div>
 
             @if($hasChildren)
-                <div x-show="open" x-collapse class="mt-1">
+                <div x-cloak x-show="open" x-collapse class="mt-1">
                     @include('partials.navigation.mobile-items', ['items' => $item->children, 'level' => $level + 1])
                 </div>
             @endif

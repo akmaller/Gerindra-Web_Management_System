@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\InteractsWithSeo;
 use App\Models\Category;
 use App\Models\CompanyProfile;
 use App\Models\HomepageSetting;
 use App\Models\Post;
 use App\Models\SiteSetting;
-use App\Http\Controllers\Concerns\InteractsWithSeo;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -55,7 +55,7 @@ class HomeController extends Controller
             return HomepageSetting::current();
         }
 
-        return new HomepageSetting();
+        return new HomepageSetting;
     }
 
     protected function buildHeroSlides(HomepageSetting $homepage): Collection
@@ -110,7 +110,7 @@ class HomeController extends Controller
             ->filter(fn ($tab) => filled($tab['title'] ?? null) && filled($tab['content'] ?? null))
             ->map(fn ($tab) => [
                 'title' => $tab['title'],
-                'content' => $tab['content'],
+                'content' => (string) str($tab['content'])->sanitizeHtml(),
             ])
             ->values();
     }

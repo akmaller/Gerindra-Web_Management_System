@@ -1,12 +1,15 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\InteractsWithSeo;
-use App\Models\Post;
 use App\Models\Page;
+use App\Models\Post;
 use App\Models\SiteSetting;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class SearchController extends Controller
@@ -15,7 +18,8 @@ class SearchController extends Controller
 
     public function index(Request $request)
     {
-        $q = trim((string) $request->query('q', ''));
+        $validated = $request->validate(['q' => ['nullable', 'string', 'max:200']]);
+        $q = trim($validated['q'] ?? '');
         $settings = SiteSetting::first();
         $siteName = $settings->site_name ?? config('app.name');
         $logoPath = optional($settings)->logo_url;
@@ -30,7 +34,7 @@ class SearchController extends Controller
             : __('Cari berita dan halaman di :site.', ['site' => $siteName]);
 
         $this->setSeo(
-            title: $searchLabel . ' | ' . $siteName,
+            title: $searchLabel.' | '.$siteName,
             description: $description,
             url: url()->full(),
             images: array_filter([$shareImage]),
@@ -63,71 +67,35 @@ class SearchController extends Controller
             ]);
         }
 
-        // --- Posts (published) ---
-        $postQuery = Post::query()
-            ->published()                             // asumsi sudah ada scope published()
-            ->where('published_at', '<=', now())
-            ->where(function ($w) use ($q) {
-                $w->where('title', 'like', "%{$q}%")
-                    ->orWhere('content', 'like', "%{$q}%");
-            })
-            ->with(['categories:id,name,slug'])
-            ->select(['id', 'title', 'slug', 'thumbnail', 'category_id', 'published_at', 'content']);
+        $pattern = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $q).'%';
+        $matches = function ($query) use ($pattern) {
+            $query->whereRaw("title LIKE ? ESCAPE '!'", [$pattern])
+                ->orWhereRaw("content LIKE ? ESCAPE '!'", [$pattern]);
+        };
+        $posts = Post::published()->where($matches)
+            ->selectRaw("id, title, slug, thumbnail, content, published_at as date, 'post' as type");
+        $pages = Page::where('is_active', true)->where($matches)
+            ->selectRaw("id, title, slug, thumbnail, content, updated_at as date, 'page' as type");
 
-        // --- Pages (published/active) ---
-        $pageQuery = Page::query()
-            ->where('is_active', true)
-            ->where(function ($w) use ($q) {
-                $w->where('title', 'like', "%{$q}%")
-                    ->orWhere('content', 'like', "%{$q}%");
-            })
-            ->select(['id', 'title', 'slug', 'content', 'updated_at']);
+        $results = DB::query()
+            ->fromSub($posts->unionAll($pages), 'search_results')
+            ->orderByDesc('date')->orderBy('type')->orderByDesc('id')
+            ->paginate(12)->withQueryString();
+        $results->through(function ($item) {
+            $date = Carbon::parse($item->date);
 
-        // eksekusi dan ubah ke bentuk unified
-        $posts = $postQuery->get()->map(function ($p) {
             return [
-                'type' => 'post',
-                'title' => $p->title,
-                'excerpt' => Str::limit(strip_tags($p->content), 180),
-                'date' => $p->published_at,
-                'thumb' => $p->thumbnail ? asset('storage/' . $p->thumbnail) : null,
-                'badge' => $p->primary_category?->name ?? 'Berita',
-                'url' => route('posts.show', [
-                    'tahun' => $p->published_at?->format('Y'),
-                    'bulan' => $p->published_at?->format('m'),
-                    'slug' => $p->slug,
-                ]),
+                'type' => $item->type,
+                'title' => $item->title,
+                'excerpt' => Str::limit(strip_tags($item->content ?? ''), 180),
+                'date' => $date,
+                'thumb' => $item->thumbnail ? asset('storage/'.$item->thumbnail) : null,
+                'badge' => $item->type === 'post' ? 'Berita' : 'Halaman',
+                'url' => $item->type === 'post'
+                    ? route('posts.show', ['tahun' => $date->format('Y'), 'bulan' => $date->format('m'), 'slug' => $item->slug])
+                    : route('pages.show', $item->slug),
             ];
         });
-
-        $pages = $pageQuery->get()->map(function ($p) {
-            return [
-                'type' => 'page',
-                'title' => $p->title,
-                'excerpt' => Str::limit(strip_tags($p->content), 180),
-                'date' => $p->updated_at,
-                'thumb' => null,
-                'badge' => 'Halaman',
-                'url' => route('pages.show', $p->slug),
-            ];
-        });
-
-        // gabung + sort desc by date
-        $collection = $posts->concat($pages)
-            ->sortByDesc('date')
-            ->values();
-
-        // manual pagination untuk mixed collection
-        $perPage = 12;
-        $page = LengthAwarePaginator::resolveCurrentPage();
-        $slice = $collection->slice(($page - 1) * $perPage, $perPage)->values();
-        $results = new LengthAwarePaginator(
-            $slice,
-            $collection->count(),
-            $perPage,
-            $page,
-            ['path' => url()->current(), 'query' => ['q' => $q]]
-        );
 
         return view('search.index', [
             'q' => $q,

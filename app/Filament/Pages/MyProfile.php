@@ -2,19 +2,20 @@
 
 namespace App\Filament\Pages;
 
-use Filament\Pages\Page;
-use Filament\Schemas\Contracts\HasSchemas;
-use Filament\Schemas\Concerns\InteractsWithSchemas;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;      // layout (Schemas)
-use Filament\Forms\Components\TextInput;      // fields (Forms)
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\FileUpload;
-use Filament\Notifications\Notification;
 use Filament\Actions;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;      // layout (Schemas)
+use Filament\Pages\Page;      // fields (Forms)
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Schemas\Schema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
@@ -24,8 +25,11 @@ class MyProfile extends Page implements HasSchemas
     use InteractsWithSchemas;
 
     protected static ?string $navigationLabel = 'Profil Saya';
+
     protected static ?string $title = 'Profil Saya';
+
     protected static ?string $slug = 'profil-saya';
+
     protected static bool $shouldRegisterNavigation = true;
 
     // v4: non-static, wajib string
@@ -36,6 +40,7 @@ class MyProfile extends Page implements HasSchemas
     {
         return 'heroicon-o-user-circle';
     }
+
     public static function getNavigationGroup(): string|\UnitEnum|null
     {
         return 'Akun';
@@ -59,7 +64,7 @@ class MyProfile extends Page implements HasSchemas
                     ->directory('avatars')                   // folder target
                     ->visibility('public')                   // pastikan publik
                     ->getUploadedFileNameForStorageUsing(    // beri nama aman (hindari masalah spasi/unik)
-                        fn($file) => (string) \Illuminate\Support\Str::uuid() . '.' . $file->getClientOriginalExtension()
+                        fn ($file) => (string) Str::uuid().'.'.$file->getClientOriginalExtension()
                     ),
 
                 Section::make('Informasi Dasar')->schema([
@@ -75,13 +80,13 @@ class MyProfile extends Page implements HasSchemas
                         TextInput::make('current_password')->label('Password Saat Ini')
                             ->password()->revealable()
                             ->hint('Masukkan password sekarang untuk verifikasi saat mengganti password.')
-                            ->dehydrateStateUsing(fn($v) => $v ?: null),
+                            ->dehydrateStateUsing(fn ($v) => $v ?: null),
                         TextInput::make('password')->label('Password Baru')
-                            ->password()->revealable()->minLength(8)
-                            ->dehydrateStateUsing(fn($v) => $v ?: null),
+                            ->password()->revealable()->minLength(12)
+                            ->dehydrateStateUsing(fn ($v) => $v ?: null),
                         TextInput::make('password_confirmation')->label('Konfirmasi Password Baru')
                             ->password()->revealable()
-                            ->dehydrateStateUsing(fn($v) => $v ?: null),
+                            ->dehydrateStateUsing(fn ($v) => $v ?: null),
                     ]),
             ])
             ->statePath('data'); // simpan state ke $this->data
@@ -114,8 +119,8 @@ class MyProfile extends Page implements HasSchemas
                 'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($u->id)],
                 'phone' => ['nullable', 'string', 'max:30'],
                 'bio' => ['nullable', 'string', 'max:1000'],
-                'current_password' => ['nullable', 'required_with:password', 'current_password:' . $guard],
-                'password' => ['nullable', 'string', Password::min(8), 'confirmed', 'different:current_password'],
+                'current_password' => ['nullable', 'required_with:password', 'current_password:'.$guard],
+                'password' => ['nullable', 'string', Password::min(12), 'confirmed', 'different:current_password'],
                 'password_confirmation' => ['nullable', 'string'],
             ])->validate();
 
@@ -165,6 +170,7 @@ class MyProfile extends Page implements HasSchemas
 
         Notification::make()->success()->title('Profil berhasil diperbarui')->send();
     }
+
     protected function getActions(): array
     {
         return [

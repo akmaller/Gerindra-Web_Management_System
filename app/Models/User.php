@@ -2,18 +2,20 @@
 
 namespace App\Models;
 
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Panel;
 
 class User extends Authenticatable implements FilamentUser
 {
     use HasRoles;
+
     protected $guard_name = 'web';
+
     use HasFactory, Notifiable;
 
     protected $fillable = [
@@ -34,9 +36,10 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
         ];
     }
+
     public function getAvatarUrlAttribute(): ?string
     {
-        if (!$this->avatar_path) {
+        if (! $this->avatar_path) {
             return null;
         }
 
@@ -47,7 +50,7 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         // sementara: izinkan semua user yang sudah login
-        return true;
+        return $this->hasAnyRole(['admin', 'editor', 'penulis']);
 
         // atau lebih aman, jika punya kolom is_admin:
         // return (bool) $this->is_admin;

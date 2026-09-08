@@ -4,15 +4,15 @@ namespace App\Filament\Pages;
 
 use App\Models\SiteSetting;
 use Filament\Actions;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Str;
 
 class SiteSettings extends Page implements HasSchemas
@@ -20,8 +20,11 @@ class SiteSettings extends Page implements HasSchemas
     use InteractsWithSchemas;
 
     protected static ?string $navigationLabel = 'Pengaturan Website';
+
     protected static ?string $title = 'Pengaturan Website';
+
     protected static ?string $slug = 'settings';
+
     protected string $view = 'filament.pages.site-settings';
 
     /** tampil di menu “Pengaturan” */
@@ -38,7 +41,7 @@ class SiteSettings extends Page implements HasSchemas
     /** hanya admin yang bisa lihat menu ini */
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->check() && auth()->user()->hasRole('admin');
+        return auth()->check() && auth()->user()->hasAnyRole(['admin', 'editor']);
     }
 
     public static function getNavigationIcon(): string|\BackedEnum|null
@@ -48,6 +51,7 @@ class SiteSettings extends Page implements HasSchemas
 
     /** record singleton & state */
     public ?SiteSetting $record = null;
+
     public ?array $data = [];
 
     /** definisi form schema */
@@ -78,7 +82,7 @@ class SiteSettings extends Page implements HasSchemas
                         ->directory('branding')
                         ->visibility('public')
                         ->getUploadedFileNameForStorageUsing(
-                            fn($file) => (string) Str::uuid() . '.' . $file->getClientOriginalExtension()
+                            fn ($file) => (string) Str::uuid().'.'.$file->getClientOriginalExtension()
                         ),
 
                     FileUpload::make('favicon_path')
@@ -89,14 +93,14 @@ class SiteSettings extends Page implements HasSchemas
                             'image/jpeg',
                             'image/webp',
                             'image/x-icon',
-                            'image/svg+xml'
+                            'image/svg+xml',
                         ])
                         ->maxSize(1024)
                         ->disk('public')
                         ->directory('branding')
                         ->visibility('public')
                         ->getUploadedFileNameForStorageUsing(
-                            fn($file) => (string) Str::uuid() . '.' . $file->getClientOriginalExtension()
+                            fn ($file) => (string) Str::uuid().'.'.$file->getClientOriginalExtension()
                         )
                         ->helperText('Gunakan ukuran kecil (32×32 atau 48×48).'),
                 ]),

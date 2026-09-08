@@ -22,3 +22,11 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+/source.tar.gz
+/preview-seed.php
+/preview-login.json
+
+/bootstrap/cache/
+/storage/
+/database/*.sqlite
