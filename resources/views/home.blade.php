@@ -113,7 +113,7 @@
                             @if($slide['subtitle'])<p class="text-sm md:text-base text-neutral-100 max-w-xl">{{ $slide['subtitle'] }}</p>@endif
                             @if($slide['title'])<h2 class="text-3xl md:text-5xl font-bold leading-tight">{{ $slide['title'] }}</h2>@endif
                             @if($slide['link_url'] && $slide['link_label'])
-                                <a href="{{ $slide['link_url'] }}" class="inline-flex items-center rounded-full bg-[color:var(--brand-primary)] px-5 py-3 text-sm font-semibold text-white shadow-lg hover:bg-[color:var(--brand-secondary)]">{{ $slide['link_label'] }}</a>
+                            <a href="{{ $slide['link_url'] }}" class="inline-flex items-center rounded-full bg-[color:var(--brand-accent)] px-5 py-3 text-sm font-semibold text-neutral-950 shadow-lg transition hover:bg-[#d6b66e]">{{ $slide['link_label'] }}</a>
                             @endif
                         </div>
                     </div>
@@ -169,7 +169,7 @@
     @endif
 
     @if($customButtons->isNotEmpty())
-        <section class="w-full bg-[color:var(--brand-primary)] {{ $heroSlides->isNotEmpty() ? '-mt-14 md:-mt-16' : 'mt-12' }}">
+        <section class="w-full border-t-2 border-[color:var(--brand-accent)] bg-[color:var(--brand-primary)] {{ $heroSlides->isNotEmpty() ? '-mt-14 md:-mt-16' : 'mt-12' }}">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
                 <div class="flex flex-col md:flex-row divide-y divide-white/20 md:divide-y-0 md:divide-x md:divide-white/20 rounded-3xl bg-white/5 backdrop-blur px-4 md:px-0">
                     @foreach($customButtons as $button)
@@ -187,13 +187,13 @@
 
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
         <div class="flex items-center justify-between gap-4 mb-6">
-            <h3 class="text-2xl font-bold text-neutral-900">Berita Terbaru</h3>
+            <h3 class="section-title text-2xl font-bold">Berita Terbaru</h3>
             <a href="{{ route('posts.index') }}" class="text-sm font-semibold text-[color:var(--brand-primary)] hover:text-[color:var(--brand-secondary)]">Lihat semua</a>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             @foreach($latestPosts as $post)
-                <article class="group overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+                <article class="group overflow-hidden rounded-xl border border-[color:var(--brand-border)] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
                     <a href="{{ $post->permalink }}" class="block">
                         <div class="aspect-[16/9] overflow-hidden">
                             @php
@@ -221,7 +221,7 @@
     </section>
 
     @if($tabSections->isNotEmpty())
-        <section class="mt-16 bg-[color:var(--brand-primary)]">
+        <section class="mt-16 border-y border-[color:var(--brand-border)] bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
                 <div
                     x-data="{
@@ -231,16 +231,16 @@
                             this.active = index;
                         },
                     }"
-                    class="rounded-3xl border border-white/20 bg-white/10 shadow-lg overflow-hidden flex flex-col backdrop-blur text-white"
+                    class="overflow-hidden rounded-xl border border-[color:var(--brand-border)] bg-white text-neutral-900 shadow-sm"
                 >
-                    <div class="flex flex-wrap gap-2 border-b border-white/15 bg-transparent px-4 py-4 md:px-6">
+                    <div class="flex flex-wrap gap-2 border-b border-[color:var(--brand-border)] bg-[color:var(--brand-surface)] px-4 py-4 md:px-6">
                         <template x-for="(tab, index) in tabs" :key="index">
                             <button
                                 type="button"
                                 class="rounded-full border px-4 py-2 text-sm font-semibold transition"
                                 :class="active === index
-                                    ? 'border-white bg-white/20 text-white shadow'
-                                    : 'border-white/40 bg-white/10 text-white/80 hover:bg-white/20 hover:text-white'"
+                                    ? 'border-[color:var(--brand-primary)] bg-[color:var(--brand-primary)] text-white shadow-sm'
+                                    : 'border-transparent bg-white text-neutral-600 hover:border-[color:var(--brand-border)] hover:text-[color:var(--brand-primary)]'"
                                 @click="setTab(index)"
                             >
                                 <span x-text="tab.title"></span>
@@ -253,7 +253,7 @@
                             <div
                                 x-show="active === index"
                                 x-transition.opacity
-                                class="prose max-w-none prose-invert"
+                                class="prose max-w-none prose-neutral"
                                 x-html="tab.content"
                             ></div>
                         </template>
@@ -272,7 +272,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 @foreach($managementTeam as $member)
                     <div class="flex flex-col items-center rounded-2xl border border-neutral-200 bg-white p-6 text-center shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-                        <div class="relative mb-4 h-32 w-32 overflow-hidden rounded-full border-4 border-[color:var(--brand-border)] shadow-inner">
+                        <div class="relative mb-4 h-32 w-32 overflow-hidden rounded-full border-4 border-[color:var(--brand-accent)] shadow-inner">
                             @if($member['photo_url'])
                                 <img src="{{ $member['photo_url'] }}" alt="{{ $member['name'] }}" class="h-full w-full object-cover" loading="lazy">
                             @else
@@ -294,14 +294,14 @@
     @if($categorySections->isNotEmpty())
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 mb-20">
             <div class="mb-6">
-                <h3 class="text-2xl font-bold text-[color:var(--brand-primary)]">Berita Berdasarkan Kategori</h3>
+                        <h3 class="section-title text-2xl font-bold">Berita Berdasarkan Kategori</h3>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 @foreach($categorySections as $section)
-                    <div class="flex h-full flex-col border border-[color:var(--brand-primary)] bg-[color:var(--brand-primary)] p-6 shadow-lg">
+                    <div class="flex h-full flex-col rounded-xl border border-[color:var(--brand-border)] bg-white p-6 shadow-sm">
                         <div class="flex items-center justify-between gap-2">
-                            <h4 class="text-xl font-semibold text-[color:var(--brand-primary-contrast)]">{{ $section['title'] }}</h4>
+                            <h4 class="text-xl font-semibold text-neutral-900">{{ $section['title'] }}</h4>
                             <a href="{{ $section['more_url'] }}" class="text-xs font-semibold uppercase tracking-wide text-[color:var(--brand-accent)] hover:text-[color:var(--brand-secondary)]">Lihat semua</a>
                         </div>
                         <div class="mt-5 space-y-4">
@@ -314,10 +314,10 @@
                                         <img src="{{ $thumbImage }}" alt="{{ $post->title }}" class="h-full w-full object-cover transition duration-500 hover:scale-105" loading="lazy">
                                     </a>
                                     <div class="flex flex-1 flex-col justify-between">
-                                        <h5 class="text-sm font-semibold leading-snug text-[color:var(--brand-primary-contrast)]">
-                                            <a href="{{ $post->permalink }}" class="text-white hover:text-[color:var(--brand-accent)]">{{ $post->title }}</a>
+                                            <h5 class="text-sm font-semibold leading-snug text-neutral-900">
+                                            <a href="{{ $post->permalink }}" class="text-neutral-900 hover:text-[color:var(--brand-primary)]">{{ $post->title }}</a>
                                         </h5>
-                                        <div class="text-xs text-white/70">
+                                        <div class="text-xs text-neutral-500">
                                             {{ $post->published_at?->translatedFormat('d M Y') }}
                                         </div>
                                     </div>

@@ -6,7 +6,7 @@
     x-data="{ open:false }"
     x-on:close-menu.window="open = false"
     @keydown.escape.window="open = false"
-    class="relative z-40 bg-white border-b border-neutral-200"
+    class="site-header relative z-40 bg-white border-b border-neutral-200"
 >
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
 

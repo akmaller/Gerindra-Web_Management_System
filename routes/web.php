@@ -14,6 +14,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+Route::redirect('/ppid', '/pages/profil-ppid', 301)->name('ppid');
+Route::redirect('/anggota-dewan', '/pages/anggota-legislatif', 301)->name('members.council');
+Route::redirect('/layanan-ambulans', '/pages/ambulance', 301)->name('ambulance');
+Route::redirect('/layanan-ambulance', '/layanan-ambulans', 301);
+Route::redirect('/pages/anggaran-ppid', '/pages/anggaan-ppid', 301);
+
 Route::get('/pages/{slug}', [PageController::class, 'show'])
     ->name('pages.show');
 
