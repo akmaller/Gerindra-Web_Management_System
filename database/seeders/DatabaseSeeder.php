@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             // CompanyProfileSeeder::class,
             CategorySeeder::class,
             RolesSeeder::class,
+            SumselNavigationSeeder::class,
         ]);
     }
 }
